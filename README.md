@@ -2,61 +2,61 @@
 
 # 🍽️ AutoMenu AI
 
-### Smart digital menus powered by artificial intelligence
+### Menús digitales inteligentes impulsados por inteligencia artificial
 
-Menús digitales inteligentes para restaurantes que quieren verse profesionales, vender mejor y actualizar su carta sin depender de diseñadores, PDFs eternos o menús impresos.
-
-<br />
-
-![AutoMenu AI Banner](https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1600&auto=format&fit=crop)
+Menús digitales para restaurantes que quieren verse más profesionales, vender mejor y actualizar su carta sin depender de diseñadores, PDFs eternos o menús impresos.
 
 <br />
 
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
-![AI Powered](https://img.shields.io/badge/AI-powered-blueviolet)
-![Project](https://img.shields.io/badge/project-final%20programming%20project-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+![Banner de AutoMenu AI](https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1600&auto=format&fit=crop)
+
+<br />
+
+![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)
+![IA](https://img.shields.io/badge/IA-powered-blueviolet)
+![Proyecto](https://img.shields.io/badge/proyecto-final%20de%20programación-blue)
+![Licencia](https://img.shields.io/badge/licencia-MIT-green)
 
 </div>
 
 ---
 
-## ✨ Overview
+## ✨ Resumen
 
-**AutoMenu AI** is a web platform that helps restaurants, cafeterias, food trucks and small food businesses create professional digital menus using artificial intelligence.
+**AutoMenu AI** es una plataforma web que ayuda a restaurantes, cafeterías, food trucks y pequeños negocios de comida a crear menús digitales profesionales usando inteligencia artificial.
 
-Instead of uploading a boring PDF or manually writing every dish description, restaurant owners can add basic information about their products and let AI improve the content.
+En vez de subir un PDF aburrido o escribir manualmente la descripción de cada platillo, el dueño del restaurante puede ingresar información básica de sus productos y dejar que la IA mejore el contenido.
 
-The platform can generate attractive dish descriptions, translate menus, suggest combos, create social media captions and publish everything as a clean QR menu.
+La plataforma puede generar descripciones atractivas, traducir menús, sugerir combos, crear textos para redes sociales y publicar todo como un menú limpio accesible por código QR.
 
-> The goal is simple: help small restaurants look like big brands.
+> La meta es simple: ayudar a restaurantes pequeños a verse como marcas grandes.
 
 ---
 
-## 🧩 The problem
+## 🧩 El problema
 
-A lot of small restaurants have great food, but their digital presence does not reflect it.
+Muchos restaurantes pequeños tienen comida excelente, pero su presencia digital no refleja la calidad de sus productos.
 
-Common problems include:
+Algunos problemas comunes son:
 
-| Problem | Impact |
+| Problema | Impacto |
 |---|---|
-| Outdated PDF menus | Customers see old prices or unavailable items |
-| Poor dish descriptions | Food feels less appealing |
-| No translations | Foreign customers struggle to order |
-| Weak social media content | Restaurants lose visibility |
-| Printed menus | Expensive and hard to update |
-| No marketing team | Owners have to do everything manually |
+| Menús en PDF desactualizados | Los clientes ven precios viejos o productos no disponibles |
+| Descripciones poco atractivas | Los platillos se perciben menos interesantes |
+| Falta de traducciones | Clientes extranjeros tienen dificultad para ordenar |
+| Redes sociales improvisadas | El restaurante pierde visibilidad |
+| Menús impresos | Son caros y difíciles de actualizar |
+| Falta de equipo de marketing | El dueño debe hacerlo todo manualmente |
 
-AutoMenu AI solves this by turning menu management into a faster, smarter and more professional experience.
+AutoMenu AI resuelve esto convirtiendo la gestión del menú en una experiencia más rápida, inteligente y profesional.
 
 ---
 
-## 🚀 The solution
+## 🚀 La solución
 
-AutoMenu AI allows a restaurant owner to enter basic dish information like:
+AutoMenu AI permite que el dueño de un restaurante ingrese información básica de un platillo, por ejemplo:
 
 ```txt
-Name: Spicy Chicken Sandwich
-Ingredients: crispy chicken, spicy mayo, lettuce, brioche bun
-Price: Q42
+Nombre: Sandwich de Pollo Picante
+Ingredientes: pollo crispy, mayonesa picante, lechuga, pan brioche
+Precio: Q42
