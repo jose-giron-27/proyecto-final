@@ -1,4 +1,5 @@
-{
+# Le dice a Vercel como correr el proyecto al subirlo a internet.
+{ 
   "version": 2,
   "builds": [
     {
