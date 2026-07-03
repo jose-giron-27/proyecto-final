@@ -67,6 +67,30 @@ def db_delete(tabla, id):
     except Exception as e:
         print(f"[db] Error en db_delete ({tabla}): {e}")
         return {"ok": False, "error": str(e)}
+    
+    # ─── Perfil del restaurante ───────────────────────────────────
+
+def guardar_restaurante(datos):
+    """
+    Guarda un restaurante nuevo en la tabla restaurants.
+    Utiliza el helper db_insert().
+    """
+    return db_insert("restaurants", datos)
+
+
+def actualizar_restaurante(id_restaurante, datos):
+    """
+    Actualiza la información de un restaurante existente.
+    Utiliza el helper db_update().
+    """
+    return db_update("restaurants", id_restaurante, datos)
+
+
+def obtener_restaurante(id_usuario):
+    """
+    Busca el restaurante asociado al usuario.
+    """
+    return db_get("restaurants", {"user_id": id_usuario})
 
 # ─── Punto de entrada para pruebas ───────────────────────────
 if __name__ == "__main__":
