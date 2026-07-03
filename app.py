@@ -1,7 +1,16 @@
 # app.py - Punto de entrada principal de AutoMenu AI
 # Inicializa Flask, registra las rutas y corre el servidor
 
-from flask import Flask, render_template, flash
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    session,
+    flash
+)
+from db import auth_register, auth_login, auth_logout
 from dotenv import load_dotenv
 from error_handler import manejar_error
 import os
@@ -13,6 +22,59 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
 # ─── Rutas base ───────────────────────────────────────────────
+@app.route("/")
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+
+    if request.method == "POST":
+
+        email = request.form["email"]
+        password = request.form["password"]
+
+        resultado = auth_register(email, password)
+
+        if resultado["ok"]:
+            flash("Cuenta creada correctamente.", "success") # usamos flash para mostrar mensajes sin escribir java adicional 
+            return redirect(url_for("login"))
+
+        flash(resultado["error"], "danger")
+
+    return render_template("auth/register.html")
+
+@app.route("/login", methods=["GET", "POST"])
+
+def login():
+
+    if request.method == "POST":
+
+        email = request.form["email"]
+        password = request.form["password"]
+
+        resultado = auth_login(email, password)
+
+        if resultado["ok"]:
+
+            session["user"] = resultado["user"].id # por que flask necesita recordar quien inició sesión po r si el dashboard más adelante quiere preguntar quien inició sesión y se sepa quien fue
+
+            flash("Bienvenido.", "success")
+
+            return redirect(url_for("index"))
+
+        flash(resultado["error"], "danger")
+
+    return render_template("auth/login.html")
+@app.route("/logout")
+def logout():
+
+    auth_logout()
+
+    session.clear()
+
+    flash("Sesión cerrada correctamente.", "info")
+
+    return redirect(url_for("login"))
+
 @app.route("/")
 def index():
     """Landing page de AutoMenu AI"""
