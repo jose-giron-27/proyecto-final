@@ -14,16 +14,31 @@ from db import auth_register, auth_login, auth_logout
 from dotenv import load_dotenv
 from error_handler import manejar_error
 import os
-
+from functools import wraps
 # Cargar variables de entorno desde .env
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
-# ─── Rutas base ───────────────────────────────────────────────
-@app.route("/")
+# ─── Decorador para proteger rutas ────────────────────────────
+def login_required(func):
+    """
+    Permite acceder a la ruta solo si existe una sesión activa.
+    """
 
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+
+        if "user" not in session:
+            flash("Debés iniciar sesión para continuar.", "warning")
+            return redirect(url_for("login"))
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+# ─── Rutas base ───────────────────────────────────────────────
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
@@ -73,7 +88,16 @@ def logout():
 
     flash("Sesión cerrada correctamente.", "info")
 
-    return redirect(url_for("login"))
+    return redirect(url_for("dashboard"))
+
+
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    """
+    Dashboard temporal mientras se desarrolla la Fase 09.
+    """
+    return "Bienvenido al Dashboard de AutoMenu AI"
 
 @app.route("/")
 def index():
