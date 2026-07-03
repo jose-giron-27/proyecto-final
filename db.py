@@ -26,8 +26,10 @@ def get_db():
     return supabase
 
 # ─── Helpers de base de datos ─────────────────────────────────
-def db_get(tabla, filtros={}):
+def db_get(tabla, filtros=None):
     """Obtiene registros de una tabla con filtros opcionales."""
+    if filtros is None:
+        filtros = {}
     try:
         db = get_db()
         query = db.table(tabla).select("*")
@@ -48,21 +50,21 @@ def db_insert(tabla, datos):
         print(f"[db] Error en db_insert ({tabla}): {e}")
         return {"ok": False, "error": str(e)}
 
-def db_update(tabla, id, datos):
+def db_update(tabla, record_id, datos):
     """Actualiza un registro por su id."""
     try:
         db = get_db()
-        resultado = db.table(tabla).update(datos).eq("id", id).execute()
+        resultado = db.table(tabla).update(datos).eq("id", record_id).execute()
         return {"ok": True, "data": resultado.data}
     except Exception as e:
         print(f"[db] Error en db_update ({tabla}): {e}")
         return {"ok": False, "error": str(e)}
 
-def db_delete(tabla, id):
+def db_delete(tabla, record_id):
     """Elimina un registro por su id."""
     try:
         db = get_db()
-        resultado = db.table(tabla).delete().eq("id", id).execute()
+        resultado = db.table(tabla).delete().eq("id", record_id).execute()
         return {"ok": True, "data": resultado.data}
     except Exception as e:
         print(f"[db] Error en db_delete ({tabla}): {e}")
