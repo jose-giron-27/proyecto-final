@@ -67,30 +67,76 @@ def db_delete(tabla, id):
     except Exception as e:
         print(f"[db] Error en db_delete ({tabla}): {e}")
         return {"ok": False, "error": str(e)}
-    
-    # ─── Perfil del restaurante ───────────────────────────────────
 
-def guardar_restaurante(datos):
+# ─── Autenticación con Supabase ─────────────────────────────── #lo agragamos aquí justo para que se mantenga la arquitectura constante
+def auth_register(email, password):
     """
-    Guarda un restaurante nuevo en la tabla restaurants.
-    Utiliza el helper db_insert().
+    Registra un nuevo usuario utilizando Supabase Auth.
     """
-    return db_insert("restaurants", datos)
+    try:
+        db = get_db()
+        resultado = db.auth.sign_up({
+            "email": email,
+            "password": password
+        })
+
+        return {
+            "ok": True,
+            "user": resultado.user
+        }
+
+    except Exception as e:
+        print(f"[db] Error en auth_register: {e}")
+        return {
+            "ok": False,
+            "error": str(e)
+        }
 
 
-def actualizar_restaurante(id_restaurante, datos):
+def auth_login(email, password):
     """
-    Actualiza la información de un restaurante existente.
-    Utiliza el helper db_update().
+    Inicia sesión con Supabase Auth.
     """
-    return db_update("restaurants", id_restaurante, datos)
+    try:
+        db = get_db()
+
+        resultado = db.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+
+        return {
+            "ok": True,
+            "session": resultado.session,
+            "user": resultado.user
+        }
+
+    except Exception as e:
+        print(f"[db] Error en auth_login: {e}")
+        return {
+            "ok": False,
+            "error": str(e)
+        }
 
 
-def obtener_restaurante(id_usuario):
+def auth_logout():
     """
-    Busca el restaurante asociado al usuario.
+    Cierra la sesión actual.
     """
-    return db_get("restaurants", {"user_id": id_usuario})
+    try:
+        db = get_db()
+
+        db.auth.sign_out()
+
+        return {"ok": True}
+
+    except Exception as e:
+        print(f"[db] Error en auth_logout: {e}")
+        return {
+            "ok": False,
+            "error": str(e)
+        }
+
 
 # ─── Punto de entrada para pruebas ───────────────────────────
 if __name__ == "__main__":
