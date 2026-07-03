@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}AutoMenu AI{% endblock %}</title> #sirve para que cada página tenga un título distinto sin repetir todo el html
+
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"> # no instalamos bootstrap, simplemente lo descargará automáticamente de internet por que el proyecto es pequeño
+
+    <!-- Hoja de estilos del proyecto -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/styles.css') }}"> #flask busca autmáticamente aunque despues cambie la ruta del servidor por que ya tiene un url para eso 
+
+</head>
+
+<body class="bg-light">
+
+    <!-- Barra de navegación --> # sirve solo para  dejar el logo y más adelante agregar  el dashboard, perfil y cerrar secsión 
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm">
+
+         <div class="container">
+
+         <a class="navbar-brand fw-bold" href="/">
+            🍽️ AutoMenu AI
+         </a>
+
+         <span class="text-white small">
+            Menús inteligentes para restaurantes
+         </span>
+
+        </div>
+
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="container py-5"><!-- Mensajes Flash -->
+{% with messages = get_flashed_messages(with_categories=true) %} #pregunta si hay mensajes para msotrar y si los hay los muestra
+
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm"> #hace que aparezca una X si el usuario quiere cerrar la alerta y el fade show hace una pequeña animación de boostrap
+                flash("Cuenta creada correctamente.", "success") 
+                flash("Contraseña incorrecta.", "danger")
+                flash("Debés iniciar sesión.", "warning")
+                {{ message }}
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+                </button>
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+{% endwith %}
+
+        {% block content %} #este es el espacio donde cada página pondrá su contenido
+        {% endblock %}
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-muted py-4">
+
+        <small>
+            © 2026 AutoMenu AI
+        </small>
+
+    </footer> #uno sencillo para que se vea más profesional
+
+    <!-- Bootstrap JS --> # hace funcionar modales, dropdowns, nevbar responsive, alerts, collapse... sin esto el bootstrap está incompleto
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <!-- JavaScript del proyecto -->
+    <script
+        src="{{ url_for('static', filename='js/main.js') }}">
+    </script>
+
+</body>
+
+</html>

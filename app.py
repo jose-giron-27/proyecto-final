@@ -1,7 +1,7 @@
 # app.py - Punto de entrada principal de AutoMenu AI
 # Inicializa Flask, registra las rutas y corre el servidor
 
-from flask import Flask, render_template
+from flask import Flask, render_template, flash
 from dotenv import load_dotenv
 from error_handler import manejar_error
 import os
