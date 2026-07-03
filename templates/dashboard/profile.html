@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}
+Perfil del Restaurante | AutoMenu AI
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-lg border-0 rounded-4">
+
+                <div class="card-body p-5">
+
+                    <h2 class="text-center mb-4">
+                        Perfil del Restaurante
+                    </h2>
+
+                    <p class="text-center text-muted mb-4">
+                        Completá la información que verán tus clientes.
+                    </p>
+
+                    <form method="POST">
+
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del restaurante</label>
+                            <input
+                                type="text"
+                                name="name"
+                                class="form-control"
+                                required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Logo (URL)</label>
+                            <input
+                                type="url"
+                                name="logo"
+                                class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea
+                                name="description"
+                                class="form-control"
+                                rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Dirección</label>
+                            <input
+                                type="text"
+                                name="address"
+                                class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Horarios</label>
+                            <input
+                                type="text"
+                                name="schedule"
+                                class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Teléfono</label>
+                            <input
+                                type="text"
+                                name="phone"
+                                class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">WhatsApp</label>
+                            <input
+                                type="text"
+                                name="whatsapp"
+                                class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Instagram</label>
+                            <input
+                                type="text"
+                                name="instagram"
+                                class="form-control">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de comida</label>
+                            <input
+                                type="text"
+                                name="food_type"
+                                class="form-control">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Imagen de portada (URL)</label>
+                            <input
+                                type="url"
+                                name="cover_image"
+                                class="form-control">
+                        </div>
+
+                        <div class="d-grid">
+
+                            <button
+                                class="btn btn-success btn-lg"
+                                type="submit">
+
+                                Guardar perfil
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
