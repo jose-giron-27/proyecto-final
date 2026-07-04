@@ -88,6 +88,55 @@ def ai_description(dish_id):
     # Paso 6: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
+
+@app.route("/ai/translate/<dish_id>", methods=["POST"])
+@login_required
+def ai_translate(dish_id):
+    """
+    Traduce la descripcion de un platillo al idioma indicado.
+    
+    Flujo:
+    1. Busca el platillo en Supabase por su ID
+    2. Obtiene el idioma elegido por el usuario (por defecto ingles)
+    3. Llama a traducir_descripcion() en ai_utils.py
+    4. Guarda la traduccion en ai_generations para historial
+    5. Redirige de vuelta a la lista de platillos
+    """
+    # Paso 1: Buscar el platillo en Supabase
+    resultado = get_dish_by_id(dish_id)
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Obtener platillo para traduccion")
+
+    platillo = resultado["data"]
+
+    # Paso 2: Obtener el idioma elegido, por defecto ingles
+    idioma = request.form.get("idioma", "ingles")
+
+    # Usamos la descripcion generada por IA si existe, si no la descripcion normal
+    descripcion = platillo.get("ai_description") or platillo.get("description", "")
+
+    # Si el platillo no tiene descripcion, no hay nada que traducir
+    if not descripcion:
+        return manejar_error("El platillo no tiene descripcion para traducir", contexto="Traduccion IA")
+
+    # Paso 3: Llamar a la funcion de traduccion con while loop de reintentos
+    resultado_ia = traducir_descripcion(descripcion=descripcion, idioma=idioma)
+
+    if not resultado_ia["ok"]:
+        return manejar_error(resultado_ia["error"], contexto="Traducir descripcion con IA")
+
+    # Paso 4: Guardar la traduccion en ai_generations para historial
+    from db import db_insert
+    db_insert("ai_generations", {
+        "dish_id": dish_id,
+        "type": "translation",
+        "prompt": f"idioma={idioma}",
+        "response": resultado_ia["traduccion"]
+    })
+
+    # Paso 5: Redirigir de vuelta a la lista de platillos
+    return redirect(url_for("dish_list"))
+
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
     return manejar_error(error, contexto="Página no encontrada")
