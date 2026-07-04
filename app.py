@@ -88,7 +88,7 @@ def logout():
 
     flash("Sesión cerrada correctamente.", "info")
 
-    return redirect(url_for("dashboard"))
+    return redirect(url_for("login"))
 
 
 @app.route("/dashboard")
