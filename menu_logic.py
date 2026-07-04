@@ -7,7 +7,7 @@ import random
 import math
 
 # ─── Agregar platillo ─────────────────────────────────────────
-def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", etiquetas=[]):
+def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", etiquetas=None):
     """Crea un diccionario con la info del platillo y lo valida."""
     # Condicionales de validación
     if not nombre or nombre.strip() == "":
@@ -17,6 +17,9 @@ def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", eti
     categorias_validas = ["entradas", "platos fuertes", "hamburguesas", "tacos", "bebidas", "postres", "combos"]
     if categoria.lower() not in categorias_validas:
         return {"ok": False, "error": f"Categoría inválida. Opciones: {categorias_validas}"}
+    
+    if etiquetas is None:
+        etiquetas = []
 
     # Diccionario del platillo
     platillo = {

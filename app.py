@@ -10,14 +10,7 @@ from flask import (
     session,
     flash
 )
-from db import (
-    auth_register,
-    auth_login,
-    auth_logout,
-    guardar_restaurante,
-    actualizar_restaurante,
-    obtener_restaurante
-)
+from db import auth_register, auth_login, auth_logout
 from dotenv import load_dotenv
 from error_handler import manejar_error
 import os
@@ -44,8 +37,8 @@ def login_required(func):
         return func(*args, **kwargs)
 
     return wrapper
-# ─── Autenticación ────────────────────────────────────────────
 
+# ─── Rutas base ───────────────────────────────────────────────
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
@@ -57,15 +50,15 @@ def register():
         resultado = auth_register(email, password)
 
         if resultado["ok"]:
-            flash("Cuenta creada correctamente.", "success")
+            flash("Cuenta creada correctamente.", "success") # usamos flash para mostrar mensajes sin escribir java adicional 
             return redirect(url_for("login"))
 
         flash(resultado["error"], "danger")
 
     return render_template("auth/register.html")
 
-
 @app.route("/login", methods=["GET", "POST"])
+
 def login():
 
     if request.method == "POST":
@@ -77,7 +70,7 @@ def login():
 
         if resultado["ok"]:
 
-            session["user"] = resultado["user"].id
+            session["user"] = resultado["user"].id # por que flask necesita recordar quien inició sesión po r si el dashboard más adelante quiere preguntar quien inició sesión y se sepa quien fue
 
             flash("Bienvenido.", "success")
 
@@ -86,10 +79,7 @@ def login():
         flash(resultado["error"], "danger")
 
     return render_template("auth/login.html")
-
-
 @app.route("/logout")
-@login_required
 def logout():
 
     auth_logout()
@@ -100,61 +90,15 @@ def logout():
 
     return redirect(url_for("login"))
 
-# ─── Perfil del restaurante ───────────────────────────────────
 
-@app.route("/profile", methods=["GET", "POST"])
+@app.route("/dashboard")
 @login_required
-def profile():
+def dashboard():
+    """
+    Dashboard temporal mientras se desarrolla la Fase 09.
+    """
+    return "Bienvenido al Dashboard de AutoMenu AI"
 
-    if request.method == "POST":
-
-        datos = {
-
-            "user_id": session["user"],
-            "nombre": request.form["nombre"],
-            "descripcion": request.form["descripcion"],
-            "direccion": request.form["direccion"],
-            "telefono": request.form["telefono"],
-            "whatsapp": request.form["whatsapp"],
-            "instagram": request.form["instagram"],
-            "tipo_comida": request.form["tipo_comida"],
-            "horarios": request.form["horarios"],
-            "logo": request.form["logo"],
-            "imagen_portada": request.form["imagen_portada"]
-
-        }
-
-        restaurante = obtener_restaurante(session["user"])
-
-        if restaurante["ok"] and restaurante["data"]:
-
-            actualizar_restaurante(
-                restaurante["data"][0]["id"],
-                datos
-            )
-
-            flash("Perfil actualizado correctamente.", "success")
-
-        else:
-
-            guardar_restaurante(datos)
-
-            flash("Perfil creado correctamente.", "success")
-
-        return redirect(url_for("profile"))
-
-    restaurante = obtener_restaurante(session["user"])
-
-    datos_restaurante = {}
-
-    if restaurante["ok"] and restaurante["data"]:
-        datos_restaurante = restaurante["data"][0]
-
-    return render_template(
-        "dashboard/profile.html",
-        restaurante=datos_restaurante
-    )
-# ─── Rutas base ───────────────────────────────────────────────
 @app.route("/")
 def index():
     """Landing page de AutoMenu AI"""
