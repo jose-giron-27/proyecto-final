@@ -70,6 +70,76 @@ def db_delete(tabla, record_id):
         print(f"[db] Error en db_delete ({tabla}): {e}")
         return {"ok": False, "error": str(e)}
 
+# ─── Autenticación con Supabase ─────────────────────────────── #lo agragamos aquí justo para que se mantenga la arquitectura constante
+def auth_register(email, password):
+    """
+    Registra un nuevo usuario utilizando Supabase Auth.
+    """
+    try:
+        db = get_db()
+        resultado = db.auth.sign_up({
+            "email": email,
+            "password": password
+        })
+
+        return {
+            "ok": True,
+            "user": resultado.user
+        }
+
+    except Exception as e:
+        print(f"[db] Error en auth_register: {e}")
+        return {
+            "ok": False,
+            "error": str(e)
+        }
+
+
+def auth_login(email, password):
+    """
+    Inicia sesión con Supabase Auth.
+    """
+    try:
+        db = get_db()
+
+        resultado = db.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+
+        return {
+            "ok": True,
+            "session": resultado.session,
+            "user": resultado.user
+        }
+
+    except Exception as e:
+        print(f"[db] Error en auth_login: {e}")
+        return {
+            "ok": False,
+            "error": str(e)
+        }
+
+
+def auth_logout():
+    """
+    Cierra la sesión actual.
+    """
+    try:
+        db = get_db()
+
+        db.auth.sign_out()
+
+        return {"ok": True}
+
+    except Exception as e:
+        print(f"[db] Error en auth_logout: {e}")
+        return {
+            "ok": False,
+            "error": str(e)
+        }
+
+
 # ─── Punto de entrada para pruebas ───────────────────────────
 
 # ─── Helpers específicos de platillos ─────────────────────────
