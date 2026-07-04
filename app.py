@@ -134,7 +134,10 @@ def ai_translate(dish_id):
         "response": resultado_ia["traduccion"]
     })
 
-    # Paso 5: Redirigir de vuelta a la lista de platillos
+    # Paso 5: Actualizar la descripcion del platillo con la traduccion
+    update_dish(dish_id, {"description": resultado_ia["traduccion"]})
+
+    # Paso 6: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
 
@@ -388,6 +391,67 @@ def ai_scan():
     return render_template("dishes/scan_review.html",
         platillos=platillos_detectados
     )
+
+
+@app.route("/ai/scan/confirm", methods=["POST"])
+@login_required
+def ai_scan_confirm():
+    """
+    Guarda los platillos confirmados por el dueno despues del escaneo de imagen.
+    
+    Flujo:
+    1. Obtiene el restaurante del usuario actual
+    2. Recibe la lista de platillos que el dueno aprobo en scan_review.html
+    3. Usa un for loop para insertar cada platillo aprobado en Supabase
+    4. Redirige a la lista de platillos cuando termina
+    """
+    # Paso 1: Obtener el restaurante del usuario
+    user_id = session.get("user")
+    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+
+    if not restaurante["ok"] or not restaurante["data"]:
+        return redirect(url_for("profile"))
+
+    restaurant_id = restaurante["data"][0]["id"]
+
+    # Paso 2: Obtener los nombres y precios que el dueno confirmo en el formulario
+    nombres = request.form.getlist("nombre")
+    precios = request.form.getlist("precio")
+    categorias = request.form.getlist("categoria")
+
+    # Verificar que hay platillos para guardar
+    if not nombres:
+        return manejar_error("No hay platillos para guardar", contexto="Confirmar escaneo")
+
+    # Paso 3: Usar for loop para insertar cada platillo aprobado en Supabase
+    platillos_guardados = 0
+    for i in range(len(nombres)):
+        # Validar cada platillo con menu_logic antes de guardarlo
+        try:
+            precio = float(precios[i]) if i < len(precios) else 0.0
+        except ValueError:
+            precio = 0.0
+
+        categoria = categorias[i] if i < len(categorias) else "general"
+
+        # Usar agregar_platillo() de menu_logic para validar
+        validacion = agregar_platillo(
+            nombre=nombres[i],
+            precio=precio,
+            categoria=categoria,
+            ingredientes=""
+        )
+
+        # Solo guardar si paso la validacion
+        if validacion["ok"]:
+            datos = validacion["platillo"]
+            datos["restaurant_id"] = restaurant_id
+            insert_dish(datos)
+            platillos_guardados += 1
+
+    # Paso 4: Redirigir a la lista de platillos
+    print(f"[ai_scan_confirm] {platillos_guardados} platillos guardados exitosamente")
+    return redirect(url_for("dish_list"))
 
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
