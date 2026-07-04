@@ -137,6 +137,56 @@ def ai_translate(dish_id):
     # Paso 5: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
+
+@app.route("/ai/caption/<dish_id>", methods=["POST"])
+@login_required
+def ai_caption(dish_id):
+    """
+    Genera un caption listo para publicar en redes sociales.
+    
+    Flujo:
+    1. Busca el platillo en Supabase por su ID
+    2. Obtiene la red social elegida por el usuario (instagram, facebook, tiktok)
+    3. Llama a generar_caption() en ai_utils.py
+    4. Guarda el caption en ai_generations para historial
+    5. Redirige de vuelta a la lista de platillos
+    """
+    # Paso 1: Buscar el platillo en Supabase
+    resultado = get_dish_by_id(dish_id)
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Obtener platillo para caption")
+
+    platillo = resultado["data"]
+
+    # Paso 2: Obtener la red social elegida, por defecto instagram
+    red = request.form.get("red", "instagram")
+
+    # Usamos la descripcion generada por IA si existe, si no la normal
+    descripcion = platillo.get("ai_description") or platillo.get("description", "")
+
+    # Paso 3: Llamar a la funcion de caption con while loop de reintentos
+    resultado_ia = generar_caption(
+        nombre=platillo["name"],
+        descripcion=descripcion,
+        precio=platillo["price"],
+        red=red
+    )
+
+    if not resultado_ia["ok"]:
+        return manejar_error(resultado_ia["error"], contexto="Generar caption con IA")
+
+    # Paso 4: Guardar el caption en ai_generations para historial
+    from db import db_insert
+    db_insert("ai_generations", {
+        "dish_id": dish_id,
+        "type": "caption",
+        "prompt": f"red={red}",
+        "response": resultado_ia["caption"]
+    })
+
+    # Paso 5: Redirigir de vuelta a la lista de platillos
+    return redirect(url_for("dish_list"))
+
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
     return manejar_error(error, contexto="Página no encontrada")
