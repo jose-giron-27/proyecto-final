@@ -243,6 +243,57 @@ def ai_combo():
     # Paso 5: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
+
+@app.route("/ai/tags/<dish_id>", methods=["POST"])
+@login_required
+def ai_tags(dish_id):
+    """
+    Recomienda etiquetas para un platillo analizando sus ingredientes con IA.
+    Etiquetas posibles: vegetariano, vegano, picante, sin gluten, popular, nuevo, recomendado.
+    
+    Flujo:
+    1. Busca el platillo en Supabase por su ID
+    2. Extrae los ingredientes del platillo
+    3. Llama a recomendar_etiquetas() en ai_utils.py
+    4. Guarda las etiquetas recomendadas en ai_generations para historial
+    5. Actualiza las etiquetas del platillo en Supabase
+    6. Redirige de vuelta a la lista de platillos
+    """
+    # Paso 1: Buscar el platillo en Supabase
+    resultado = get_dish_by_id(dish_id)
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Obtener platillo para etiquetas")
+
+    platillo = resultado["data"]
+
+    # Paso 2: Extraer los ingredientes del platillo
+    ingredientes = platillo.get("ingredients", "")
+    
+    # Si no tiene ingredientes, no podemos recomendar etiquetas
+    if not ingredientes:
+        return manejar_error("El platillo no tiene ingredientes registrados", contexto="Recomendar etiquetas")
+
+    # Paso 3: Llamar a la funcion de etiquetas con while loop de reintentos
+    resultado_ia = recomendar_etiquetas(ingredientes=ingredientes)
+
+    if not resultado_ia["ok"]:
+        return manejar_error(resultado_ia["error"], contexto="Recomendar etiquetas con IA")
+
+    # Paso 4: Guardar las etiquetas en ai_generations para historial
+    from db import db_insert
+    db_insert("ai_generations", {
+        "dish_id": dish_id,
+        "type": "tags",
+        "prompt": f"ingredientes={ingredientes}",
+        "response": str(resultado_ia["etiquetas"])
+    })
+
+    # Paso 5: Actualizar las etiquetas del platillo en Supabase
+    update_dish(dish_id, {"tags": resultado_ia["etiquetas"]})
+
+    # Paso 6: Redirigir de vuelta a la lista de platillos
+    return redirect(url_for("dish_list"))
+
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
     return manejar_error(error, contexto="Página no encontrada")
