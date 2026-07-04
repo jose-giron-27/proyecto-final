@@ -100,6 +100,16 @@ def dish_edit(dish_id):
 
     return render_template("dishes/edit.html", platillo=platillo)
 
+
+@app.route("/dishes/delete/<dish_id>", methods=["POST"])
+@login_required
+def dish_delete(dish_id):
+    """Elimina un platillo de la base de datos."""
+    resultado = delete_dish(dish_id)
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Eliminar platillo")
+    return redirect(url_for("dish_list"))
+
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
     return manejar_error(error, contexto="Pagina no encontrada")
