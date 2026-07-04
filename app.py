@@ -110,6 +110,30 @@ def dish_delete(dish_id):
         return manejar_error(resultado["error"], contexto="Eliminar platillo")
     return redirect(url_for("dish_list"))
 
+
+@app.route("/dishes/toggle/<dish_id>", methods=["POST"])
+@login_required
+def dish_toggle(dish_id):
+    """
+    Activa o desactiva la disponibilidad de un platillo.
+    Recibe el estado actual y lo invierte (True -> False o False -> True).
+    """
+    # Obtener el estado actual que mandó el formulario
+    is_available = request.form.get("is_available") == "true"
+    
+    # Invertir el estado actual
+    nuevo_estado = not is_available
+    
+    # Actualizar en Supabase usando el helper de db.py
+    resultado = toggle_dish_availability(dish_id, nuevo_estado)
+    
+    # Si algo salió mal, imprimir en terminal y mostrar error
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Toggle disponibilidad")
+    
+    # Redirigir de vuelta a la lista de platillos
+    return redirect(url_for("dish_list"))
+
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
     return manejar_error(error, contexto="Pagina no encontrada")
