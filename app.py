@@ -19,6 +19,75 @@ def index():
     return render_template("index.html")
 
 # ─── Manejo global de errores ─────────────────────────────────
+
+# ─── Rutas de IA generativa ───────────────────────────────────
+# Importamos todas las funciones de IA que viven en ai_utils.py
+from ai_utils import (
+    generar_descripcion,       # Genera descripcion atractiva del platillo
+    traducir_descripcion,      # Traduce la descripcion a otro idioma
+    generar_caption,           # Genera caption para redes sociales
+    sugerir_combo,             # Sugiere combos con los platillos existentes
+    recomendar_etiquetas,      # Recomienda etiquetas segun los ingredientes
+    mejorar_nombre,            # Sugiere nombres mas llamativos
+    escanear_menu_desde_imagen # Lee una foto de menu fisico y extrae platillos
+)
+
+@app.route("/ai/description/<dish_id>", methods=["POST"])
+@login_required
+def ai_description(dish_id):
+    """
+    Genera una descripcion atractiva para un platillo usando IA.
+    
+    Flujo:
+    1. Busca el platillo en Supabase por su ID
+    2. Obtiene el tono elegido por el usuario (casual, elegante, juvenil, premium)
+    3. Llama a generar_descripcion() en ai_utils.py (tiene while loop de reintentos)
+    4. Guarda la generacion en la tabla ai_generations para historial
+    5. Actualiza el campo ai_description del platillo en Supabase
+    6. Redirige de vuelta a la lista de platillos
+    """
+    # Paso 1: Buscar el platillo en Supabase usando su ID
+    resultado = get_dish_by_id(dish_id)
+    
+    # Si no se encontro el platillo, mostrar error en terminal y modal
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Obtener platillo para descripcion IA")
+
+    # Guardamos los datos del platillo en una variable
+    platillo = resultado["data"]
+    
+    # Paso 2: Obtener el tono que eligio el usuario en el formulario
+    # Si no eligio ninguno, usamos "casual" por defecto
+    tono = request.form.get("tono", "casual")
+
+    # Paso 3: Llamar a la funcion de IA con los datos del platillo
+    # Esta funcion tiene un while loop que reintenta si la API falla
+    resultado_ia = generar_descripcion(
+        nombre=platillo["name"],
+        ingredientes=platillo["ingredients"],
+        precio=platillo["price"],
+        tono=tono
+    )
+
+    # Si la IA fallo despues de todos los reintentos, mostrar error
+    if not resultado_ia["ok"]:
+        return manejar_error(resultado_ia["error"], contexto="Generar descripcion con IA")
+
+    # Paso 4: Guardar la generacion en ai_generations para historial
+    from db import db_insert
+    db_insert("ai_generations", {
+        "dish_id": dish_id,
+        "type": "description",
+        "prompt": f"nombre={platillo['name']}, tono={tono}",
+        "response": resultado_ia["descripcion"]
+    })
+
+    # Paso 5: Actualizar el campo ai_description del platillo en Supabase
+    update_dish(dish_id, {"ai_description": resultado_ia["descripcion"]})
+
+    # Paso 6: Redirigir de vuelta a la lista de platillos
+    return redirect(url_for("dish_list"))
+
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
     return manejar_error(error, contexto="Página no encontrada")
