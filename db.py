@@ -71,6 +71,44 @@ def db_delete(tabla, record_id):
         return {"ok": False, "error": str(e)}
 
 # ─── Punto de entrada para pruebas ───────────────────────────
+
+# ─── Helpers específicos de platillos ─────────────────────────
+def get_dishes(restaurant_id):
+    """Obtiene todos los platillos de un restaurante."""
+    return db_get("dishes", filtros={"restaurant_id": restaurant_id})
+
+def get_dish_by_id(dish_id):
+    """Obtiene un platillo por su id."""
+    try:
+        db = get_db()
+        resultado = db.table("dishes").select("*").eq("id", dish_id).execute()
+        if resultado.data:
+            return {"ok": True, "data": resultado.data[0]}
+        return {"ok": False, "error": "Platillo no encontrado"}
+    except Exception as e:
+        print(f"[db] Error en get_dish_by_id: {e}")
+        return {"ok": False, "error": str(e)}
+
+def insert_dish(datos):
+    """Inserta un nuevo platillo en la base de datos."""
+    return db_insert("dishes", datos)
+
+def update_dish(dish_id, datos):
+    """Actualiza un platillo por su id."""
+    return db_update("dishes", dish_id, datos)
+
+def delete_dish(dish_id):
+    """Elimina un platillo por su id."""
+    return db_delete("dishes", dish_id)
+
+def toggle_dish_availability(dish_id, is_available):
+    """Activa o desactiva la disponibilidad de un platillo."""
+    from datetime import datetime
+    return db_update("dishes", dish_id, {
+        "is_available": is_available,
+        "updated_at": datetime.now().isoformat()
+    })
+
 if __name__ == "__main__":
     print("Probando conexión con Supabase...")
     resultado = db_get("dishes")
