@@ -187,6 +187,62 @@ def ai_caption(dish_id):
     # Paso 5: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
+
+@app.route("/ai/combo", methods=["POST"])
+@login_required
+def ai_combo():
+    """
+    Sugiere un combo usando los platillos existentes del restaurante.
+    
+    Flujo:
+    1. Obtiene el restaurante del usuario desde Supabase
+    2. Obtiene todos los platillos disponibles del restaurante
+    3. Llama a sugerir_combo() en ai_utils.py pasando la lista de platillos
+    4. Guarda la sugerencia en ai_generations para historial
+    5. Redirige de vuelta a la lista de platillos
+    """
+    # Paso 1: Obtener el restaurante del usuario actual
+    user_id = session.get("user")
+    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    
+    if not restaurante["ok"] or not restaurante["data"]:
+        return manejar_error("Restaurante no encontrado", contexto="Sugerir combo")
+
+    restaurant_id = restaurante["data"][0]["id"]
+
+    # Paso 2: Obtener todos los platillos disponibles del restaurante
+    # Usamos un for loop para filtrar solo los disponibles
+    resultado = get_dishes(restaurant_id)
+    todos_los_platillos = resultado["data"] if resultado["ok"] else []
+    
+    platillos_disponibles = []
+    for platillo in todos_los_platillos:
+        if platillo["is_available"]:
+            platillos_disponibles.append(platillo)
+
+    # Si no hay platillos disponibles, no podemos sugerir combo
+    if not platillos_disponibles:
+        return manejar_error("No hay platillos disponibles para sugerir un combo", contexto="Sugerir combo")
+
+    # Paso 3: Llamar a la funcion de combos con while loop de reintentos
+    resultado_ia = sugerir_combo(lista_platillos=platillos_disponibles)
+
+    if not resultado_ia["ok"]:
+        return manejar_error(resultado_ia["error"], contexto="Sugerir combo con IA")
+
+    # Paso 4: Guardar la sugerencia en ai_generations
+    # Como el combo no pertenece a un platillo especifico, usamos el primer platillo como referencia
+    from db import db_insert
+    db_insert("ai_generations", {
+        "dish_id": platillos_disponibles[0]["id"],
+        "type": "combo",
+        "prompt": f"platillos={[p['name'] for p in platillos_disponibles]}",
+        "response": resultado_ia["combo"]
+    })
+
+    # Paso 5: Redirigir de vuelta a la lista de platillos
+    return redirect(url_for("dish_list"))
+
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
     return manejar_error(error, contexto="Página no encontrada")
