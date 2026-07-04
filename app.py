@@ -144,11 +144,14 @@ def dish_create():
     user_id = session.get("user")
     restaurante = db_get("restaurants", filtros={"user_id": user_id})
     if not restaurante["ok"] or not restaurante["data"]:
-        return redirect(url_for("index"))
+        return redirect(url_for("profile"))
     restaurant_id = restaurante["data"][0]["id"]
     if request.method == "POST":
         nombre = request.form.get("nombre", "")
-        precio = float(request.form.get("precio", 0))
+        try:
+            precio = float(request.form.get("precio", 0))
+        except ValueError:
+            return manejar_error("El precio debe ser un numero valido", contexto="Crear platillo")
         categoria = request.form.get("categoria", "")
         ingredientes = request.form.get("ingredientes", "")
         imagen_url = request.form.get("imagen_url", "")
@@ -185,6 +188,8 @@ def dish_edit(dish_id):
             "etiquetas": request.form.getlist("etiquetas"),
         }
         platillo_actualizado = editar_platillo(platillo, campos)
+        if not platillo_actualizado["ok"]:
+            return manejar_error(platillo_actualizado["error"], contexto="Editar platillo")
         resultado_update = update_dish(dish_id, platillo_actualizado["platillo"])
         if not resultado_update["ok"]:
             return manejar_error(resultado_update["error"], contexto="Editar platillo")
