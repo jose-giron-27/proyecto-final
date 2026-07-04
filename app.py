@@ -294,6 +294,53 @@ def ai_tags(dish_id):
     # Paso 6: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
+
+@app.route("/ai/name/<dish_id>", methods=["POST"])
+@login_required
+def ai_name(dish_id):
+    """
+    Sugiere nombres mas llamativos para un platillo usando IA.
+    La IA devuelve 4 opciones de nombres basandose en el nombre original.
+    
+    Flujo:
+    1. Busca el platillo en Supabase por su ID
+    2. Obtiene el nombre original del platillo
+    3. Llama a mejorar_nombre() en ai_utils.py
+    4. Guarda las sugerencias en ai_generations para historial
+    5. Redirige de vuelta a la lista de platillos
+    """
+    # Paso 1: Buscar el platillo en Supabase
+    resultado = get_dish_by_id(dish_id)
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Obtener platillo para mejorar nombre")
+
+    platillo = resultado["data"]
+
+    # Paso 2: Obtener el nombre original del platillo
+    nombre_original = platillo.get("name", "")
+
+    if not nombre_original:
+        return manejar_error("El platillo no tiene nombre registrado", contexto="Mejorar nombre")
+
+    # Paso 3: Llamar a la funcion de mejora de nombre con while loop de reintentos
+    resultado_ia = mejorar_nombre(nombre_original=nombre_original)
+
+    if not resultado_ia["ok"]:
+        return manejar_error(resultado_ia["error"], contexto="Mejorar nombre con IA")
+
+    # Paso 4: Guardar las sugerencias en ai_generations para historial
+    # Unimos la lista de nombres en un string para guardarlo
+    from db import db_insert
+    db_insert("ai_generations", {
+        "dish_id": dish_id,
+        "type": "name_suggestion",
+        "prompt": f"nombre_original={nombre_original}",
+        "response": ", ".join(resultado_ia["nombres"])
+    })
+
+    # Paso 5: Redirigir de vuelta a la lista de platillos
+    return redirect(url_for("dish_list"))
+
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
     return manejar_error(error, contexto="Página no encontrada")
