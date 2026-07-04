@@ -341,6 +341,54 @@ def ai_name(dish_id):
     # Paso 5: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
+
+@app.route("/ai/scan", methods=["GET", "POST"])
+@login_required
+def ai_scan():
+    """
+    Escanea una foto de un menu fisico y extrae los platillos automaticamente.
+    
+    Flujo GET: Muestra el formulario para subir la imagen
+    Flujo POST:
+    1. Recibe la imagen subida por el usuario
+    2. Lee los bytes de la imagen
+    3. Llama a escanear_menu_desde_imagen() en ai_utils.py que usa vision artificial
+    4. Devuelve los platillos detectados a la pantalla de revision
+    5. El usuario revisa y confirma cuales guardar en scan_review.html
+    """
+    # Si es GET, simplemente mostrar el formulario de escaneo
+    if request.method == "GET":
+        return render_template("dishes/scan.html")
+
+    # Paso 1: Verificar que se subio una imagen
+    if "imagen" not in request.files:
+        return manejar_error("No se subio ninguna imagen", contexto="Escanear menu")
+
+    imagen = request.files["imagen"]
+
+    # Verificar que el archivo no esta vacio
+    if imagen.filename == "":
+        return manejar_error("El archivo de imagen esta vacio", contexto="Escanear menu")
+
+    # Paso 2: Leer los bytes de la imagen para enviarlos a la API de vision
+    imagen_bytes = imagen.read()
+
+    # Paso 3: Llamar a la funcion de vision artificial con while loop de reintentos
+    # La IA analiza la imagen y devuelve un JSON con los platillos detectados
+    resultado_ia = escanear_menu_desde_imagen(imagen_bytes=imagen_bytes)
+
+    if not resultado_ia["ok"]:
+        return manejar_error(resultado_ia["error"], contexto="Escanear imagen del menu")
+
+    # Paso 4: Obtener los platillos que detecto la IA
+    platillos_detectados = resultado_ia["platillos"]
+
+    # Paso 5: Mostrar la pantalla de revision para que el dueno confirme
+    # El dueno puede editar o quitar platillos antes de guardarlos
+    return render_template("dishes/scan_review.html",
+        platillos=platillos_detectados
+    )
+
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
     return manejar_error(error, contexto="Página no encontrada")
