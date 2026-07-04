@@ -72,6 +72,34 @@ def dish_create():
         return redirect(url_for("dish_list"))
     return render_template("dishes/create.html")
 
+
+@app.route("/dishes/edit/<dish_id>", methods=["GET", "POST"])
+@login_required
+def dish_edit(dish_id):
+    """Edita un platillo existente usando la logica de menu_logic."""
+    resultado = get_dish_by_id(dish_id)
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Obtener platillo")
+
+    platillo = resultado["data"]
+
+    if request.method == "POST":
+        campos = {
+            "nombre": request.form.get("nombre", ""),
+            "precio": float(request.form.get("precio", 0)),
+            "categoria": request.form.get("categoria", ""),
+            "ingredientes": request.form.get("ingredientes", ""),
+            "imagen_url": request.form.get("imagen_url", ""),
+            "etiquetas": request.form.getlist("etiquetas"),
+        }
+        platillo_actualizado = editar_platillo(platillo, campos)
+        resultado_update = update_dish(dish_id, platillo_actualizado["platillo"])
+        if not resultado_update["ok"]:
+            return manejar_error(resultado_update["error"], contexto="Editar platillo")
+        return redirect(url_for("dish_list"))
+
+    return render_template("dishes/edit.html", platillo=platillo)
+
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
     return manejar_error(error, contexto="Pagina no encontrada")
