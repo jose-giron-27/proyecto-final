@@ -26,8 +26,10 @@ def get_db():
     return supabase
 
 # ─── Helpers de base de datos ─────────────────────────────────
-def db_get(tabla, filtros={}):
+def db_get(tabla, filtros=None):
     """Obtiene registros de una tabla con filtros opcionales."""
+    if filtros is None:
+        filtros = {}
     try:
         db = get_db()
         query = db.table(tabla).select("*")
@@ -48,27 +50,135 @@ def db_insert(tabla, datos):
         print(f"[db] Error en db_insert ({tabla}): {e}")
         return {"ok": False, "error": str(e)}
 
-def db_update(tabla, id, datos):
+def db_update(tabla, record_id, datos):
     """Actualiza un registro por su id."""
     try:
         db = get_db()
-        resultado = db.table(tabla).update(datos).eq("id", id).execute()
+        resultado = db.table(tabla).update(datos).eq("id", record_id).execute()
         return {"ok": True, "data": resultado.data}
     except Exception as e:
         print(f"[db] Error en db_update ({tabla}): {e}")
         return {"ok": False, "error": str(e)}
 
-def db_delete(tabla, id):
+def db_delete(tabla, record_id):
     """Elimina un registro por su id."""
     try:
         db = get_db()
-        resultado = db.table(tabla).delete().eq("id", id).execute()
+        resultado = db.table(tabla).delete().eq("id", record_id).execute()
         return {"ok": True, "data": resultado.data}
     except Exception as e:
         print(f"[db] Error en db_delete ({tabla}): {e}")
         return {"ok": False, "error": str(e)}
 
+# ─── Autenticación con Supabase ─────────────────────────────── #lo agragamos aquí justo para que se mantenga la arquitectura constante
+def auth_register(email, password):
+    """
+    Registra un nuevo usuario utilizando Supabase Auth.
+    """
+    try:
+        db = get_db()
+        resultado = db.auth.sign_up({
+            "email": email,
+            "password": password
+        })
+
+        return {
+            "ok": True,
+            "user": resultado.user
+        }
+
+    except Exception as e:
+        print(f"[db] Error en auth_register: {e}")
+        return {
+            "ok": False,
+            "error": str(e)
+        }
+
+
+def auth_login(email, password):
+    """
+    Inicia sesión con Supabase Auth.
+    """
+    try:
+        db = get_db()
+
+        resultado = db.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+
+        return {
+            "ok": True,
+            "session": resultado.session,
+            "user": resultado.user
+        }
+
+    except Exception as e:
+        print(f"[db] Error en auth_login: {e}")
+        return {
+            "ok": False,
+            "error": str(e)
+        }
+
+
+def auth_logout():
+    """
+    Cierra la sesión actual.
+    """
+    try:
+        db = get_db()
+
+        db.auth.sign_out()
+
+        return {"ok": True}
+
+    except Exception as e:
+        print(f"[db] Error en auth_logout: {e}")
+        return {
+            "ok": False,
+            "error": str(e)
+        }
+
+
 # ─── Punto de entrada para pruebas ───────────────────────────
+
+# ─── Helpers específicos de platillos ─────────────────────────
+def get_dishes(restaurant_id):
+    """Obtiene todos los platillos de un restaurante."""
+    return db_get("dishes", filtros={"restaurant_id": restaurant_id})
+
+def get_dish_by_id(dish_id):
+    """Obtiene un platillo por su id."""
+    try:
+        db = get_db()
+        resultado = db.table("dishes").select("*").eq("id", dish_id).execute()
+        if resultado.data:
+            return {"ok": True, "data": resultado.data[0]}
+        return {"ok": False, "error": "Platillo no encontrado"}
+    except Exception as e:
+        print(f"[db] Error en get_dish_by_id: {e}")
+        return {"ok": False, "error": str(e)}
+
+def insert_dish(datos):
+    """Inserta un nuevo platillo en la base de datos."""
+    return db_insert("dishes", datos)
+
+def update_dish(dish_id, datos):
+    """Actualiza un platillo por su id."""
+    return db_update("dishes", dish_id, datos)
+
+def delete_dish(dish_id):
+    """Elimina un platillo por su id."""
+    return db_delete("dishes", dish_id)
+
+def toggle_dish_availability(dish_id, is_available):
+    """Activa o desactiva la disponibilidad de un platillo."""
+    from datetime import datetime
+    return db_update("dishes", dish_id, {
+        "is_available": is_available,
+        "updated_at": datetime.now().isoformat()
+    })
+
 if __name__ == "__main__":
     print("Probando conexión con Supabase...")
     resultado = db_get("dishes")
