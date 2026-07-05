@@ -188,6 +188,28 @@ def dashboard():
     """
     return "Bienvenido al Dashboard de AutoMenu AI"
 
+@app.route("/dashboard/qr")
+@login_required
+def qr_dashboard():
+    """
+    Muestra el código QR del restaurante.
+    """
+
+    restaurante = obtener_restaurante(session["user"])
+
+    if not restaurante["ok"] or not restaurante["data"]:
+        return manejar_error(
+            "Restaurante no encontrado",
+            contexto="Código QR"
+        )
+
+    restaurante = restaurante["data"][0]
+
+    return render_template(
+        "dashboard/qr.html",
+        restaurante=restaurante
+    )
+
 @app.route("/")
 def index():
     return render_template("index.html")
