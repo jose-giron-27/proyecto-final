@@ -16,11 +16,27 @@ Restaurant QR
         Customers can scan this QR code to access your public menu.
     </p>
 
+    <p class="text-muted mt-3">
+
+Print this QR code or place it on your restaurant tables so customers can access your digital menu instantly.
+
+</p>
     <img
         src="{{ url_for('generate_qr', slug=restaurante.slug) }}"
         class="img-fluid shadow rounded"
-        style="max-width:300px;">
+        style="max-width:300px; width:100%;">
 
 </div>
+<div class="mt-4">
 
+    <a
+        href="{{ url_for('generate_qr', slug=restaurante.slug) }}"
+        download="menu-qr.png"
+        class="btn btn-success">
+
+        Download QR Code
+
+    </a>
+
+</div>
 {% endblock %}
