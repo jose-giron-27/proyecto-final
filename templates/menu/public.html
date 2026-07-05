@@ -31,7 +31,7 @@
             style="width:150px;height:150px;object-fit:cover;">
         {% endif %}
 
-        <h1 class="fw-bold">
+        <h1 class="fw-bold display-4">
             {{ restaurante.nombre }}
         </h1>
         <p class="badge bg-success">
@@ -78,6 +78,16 @@
                 target="_blank">
 
                 Instagram
+            
+            </a>
+            {% endif %}
+            {% if restaurante.facebook %}
+            <a
+                href="{{ restaurante.facebook }}"
+                class="btn btn-primary"
+                target="_blank">
+
+                Facebook
 
             </a>
             {% endif %}
@@ -109,7 +119,7 @@
 
                     <h4>
 
-                        {{ platillo.nombre }}
+                        {{ platillo.name }}
 
                     </h4>
 
@@ -121,7 +131,7 @@
 
                         {% else %}
 
-                        {{ platillo.descripcion }}
+                        {{ platillo.description }}
 
                         {% endif %}
 
@@ -129,9 +139,9 @@
 
                     <p>
 
-                        <span class="badge bg-primary">
+                        <span class="badge bg-primary me-2">
 
-                            {{ platillo.categoria }}
+                            {{ platillo.category }}
 
                         </span>
 
@@ -151,7 +161,7 @@
 
                     <h5 class="text-success">
 
-                        Q {{ platillo.precio }}
+                        Q {{ platillo.price }}
 
                     </h5>
 
@@ -166,5 +176,29 @@
     </div>
 
 </div>
+<style>
+
+.card img{
+    object-fit:cover;
+}
+
+@media (max-width:768px){
+
+    h1{
+        font-size:2rem;
+    }
+
+    .card{
+        margin-bottom:20px;
+    }
+
+    .btn{
+        width:100%;
+        margin-bottom:10px;
+    }
+
+}
+
+</style>
 
 {% endblock %}
