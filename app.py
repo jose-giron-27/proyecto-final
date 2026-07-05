@@ -1,11 +1,10 @@
 # app.py - Punto de entrada principal de AutoMenu AI
 # Inicializa Flask, registra las rutas y corre el servidor
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash
 from dotenv import load_dotenv
 from error_handler import manejar_error
 import os
-
+import re
 from flask import (
     Flask,
     render_template,
@@ -15,11 +14,20 @@ from flask import (
     session,
     flash
 )
-from db import auth_register, auth_login, auth_logout
 from dotenv import load_dotenv
 from error_handler import manejar_error
 import os
 from functools import wraps
+from db import (
+    auth_register,
+    auth_login,
+    auth_logout,
+    guardar_restaurante,
+    actualizar_restaurante,
+    obtener_restaurante,
+    get_restaurant_by_slug,
+    get_dishes
+)
 # Cargar variables de entorno desde .env
 load_dotenv()
 
@@ -106,6 +114,66 @@ def logout():
 
     return redirect(url_for("login"))
 
+# ─── Perfil del restaurante ───────────────────────────────────
+
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+
+    if request.method == "POST":
+
+        datos = {
+
+            "user_id": session["user"],
+            "nombre": request.form["nombre"],
+            "descripcion": request.form["descripcion"],
+            "direccion": request.form["direccion"],
+            "telefono": request.form["telefono"],
+            "whatsapp": request.form["whatsapp"],
+            "instagram": request.form["instagram"],
+            "tipo_comida": request.form["tipo_comida"],
+            "horarios": request.form["horarios"],
+            "logo": request.form["logo"],
+            "imagen_portada": request.form["imagen_portada"]
+
+        }
+
+        # genera el slug automáticamente
+        slug = datos["nombre"].lower()
+        slug = re.sub(r"[^a-z0-9]+", "-", slug)
+        slug = slug.strip("-")
+        datos["slug"] = slug
+
+        restaurante = obtener_restaurante(session["user"])
+
+        if restaurante["ok"] and restaurante["data"]:
+
+            actualizar_restaurante(
+                restaurante["data"][0]["id"],
+                datos
+            )
+
+            flash("Perfil actualizado correctamente.", "success")
+
+        else:
+
+            guardar_restaurante(datos)
+
+            flash("Perfil creado correctamente.", "success")
+
+        return redirect(url_for("profile"))
+
+    restaurante = obtener_restaurante(session["user"])
+
+    datos_restaurante = {}
+
+    if restaurante["ok"] and restaurante["data"]:
+        datos_restaurante = restaurante["data"][0]
+
+    return render_template(
+        "dashboard/profile.html",
+        restaurante=datos_restaurante
+    )
 
 @app.route("/dashboard")
 @login_required
@@ -118,6 +186,38 @@ def dashboard():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/menu/<slug>")
+def public_menu(slug): 
+    """
+    Muestra el menú público de un restaurante.
+    No requiere iniciar sesión.
+    """
+
+    restaurante = get_restaurant_by_slug(slug) #busca el restaurante
+
+    if not restaurante["ok"] or not restaurante["data"]:
+        return manejar_error(
+            "Restaurante no encontrado",
+            contexto="Menú público"
+        ) #por si no existe el restarurante se cumple este if 
+
+    restaurante = restaurante["data"][0]
+
+    resultado = get_dishes(restaurante["id"]) # se cumple si el restaaurante si existe 
+
+    platillos = []
+
+    if resultado["ok"]:
+        for platillo in resultado["data"]:
+            if platillo["is_available"]: #solo muestran los platillos disponibles
+                platillos.append(platillo)
+
+    return render_template(
+         "menu/public.html",
+         restaurante=restaurante,
+         platillos=platillos
+        ) # envía toda la info a html
 
 # ─── Manejo global de errores ─────────────────────────────────
 
