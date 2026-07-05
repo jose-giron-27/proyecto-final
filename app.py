@@ -3,6 +3,8 @@
 
 from dotenv import load_dotenv
 from error_handler import manejar_error
+import qrcode
+import io
 import os
 import re
 from flask import (
@@ -12,7 +14,8 @@ from flask import (
     redirect,
     url_for,
     session,
-    flash
+    flash,
+    send_file
 )
 from dotenv import load_dotenv
 from error_handler import manejar_error
@@ -219,6 +222,26 @@ def public_menu(slug):
          platillos=platillos
         ) # envía toda la info a html
 
+@app.route("/qr/<slug>") # genera un qr que automáticamente redirige al menú público del restaurante
+def generate_qr(slug):
+    """
+    Generates a QR code that points to the restaurant's public menu.
+    """
+
+    url = request.host_url.rstrip("/") + url_for("public_menu", slug=slug)
+
+    qr = qrcode.make(url)
+
+    buffer = io.BytesIO()
+
+    qr.save(buffer, format="PNG")
+
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        mimetype="image/png"
+    )
 # ─── Manejo global de errores ─────────────────────────────────
 
 # ─── Rutas de IA generativa ───────────────────────────────────
