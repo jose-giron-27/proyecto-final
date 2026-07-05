@@ -246,26 +246,6 @@ def public_menu(slug):
          platillos=platillos
         ) # envía toda la info a html
 
-@app.route("/dashboard/qr/<slug>") #concatena los datos para unirlos a un url para genrar el qr 
-@login_required
-def generate_qr(slug):
-    """
-    Genera un código QR para el menú público del restaurante.
-    """
-
-    url_menu = request.host_url.rstrip("/") + "/menu/" + slug
-
-    qr = qrcode.make(url_menu)
-
-    buffer = BytesIO()
-    qr.save(buffer, format="PNG")
-    buffer.seek(0)
-
-    return send_file(
-        buffer,
-        mimetype="image/png"
-    )
-
 @app.route("/qr/<slug>") # genera un qr que automáticamente redirige al menú público del restaurante
 def generate_qr(slug):
     """
@@ -276,7 +256,7 @@ def generate_qr(slug):
 
     qr = qrcode.make(url)
 
-    buffer = io.BytesIO()
+    buffer = BytesIO()
 
     qr.save(buffer, format="PNG")
 
