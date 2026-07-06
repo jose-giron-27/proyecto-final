@@ -44,11 +44,6 @@
         </p>
 
         <p>
-            <strong>Tipo de comida:</strong>
-            {{ restaurante.tipo_comida }}
-        </p>
-
-        <p>
             <strong>Horario:</strong>
             {{ restaurante.horarios }}
         </p>
@@ -102,9 +97,26 @@
 
             {% for platillo in platillos %}
 
-            {% if platillo.is_available %}
+            <div class="col-lg-4">
 
-        <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card shadow h-100">
+
+                    {% if platillo.imagen_url %}
+                    <img
+                        src="{{ platillo.imagen_url }}"
+                        class="card-img-top"
+                        style="height:220px;object-fit:cover;">
+                    {% endif %}
+
+                    <div class="card-body">
+
+                        <h4>
+
+                            {{ platillo.name }}
+
+                        </h4>
+
+                        <p class="text-muted
 
             <div class="card shadow h-100">
 
@@ -171,7 +183,7 @@
 
         </div>
         {% endif %}
-        {% endfor %}
+        
 
     </div>
 

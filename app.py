@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from error_handler import manejar_error
 import qrcode
 import io
-import qrcode
 from io import BytesIO
 import os
 import re
@@ -21,7 +20,6 @@ from flask import (
 )
 from dotenv import load_dotenv
 from error_handler import manejar_error
-import os
 from functools import wraps
 from db import (
     auth_register,
