@@ -184,9 +184,23 @@ def profile():
 @login_required
 def dashboard():
     """
-    Dashboard temporal mientras se desarrolla la Fase 09.
+    Vista principal del restaurante.
     """
-    return "Bienvenido al Dashboard de AutoMenu AI"
+
+    restaurante = obtener_restaurante(session["user"])
+
+    if not restaurante["ok"] or not restaurante["data"]:
+        return manejar_error(
+            "Restaurante no encontrado",
+            contexto="Dashboard"
+        )
+
+    restaurante = restaurante["data"][0]
+
+    return render_template(
+        "dashboard/index.html",
+        restaurante=restaurante
+    )
 
 @app.route("/dashboard/qr")
 @login_required
