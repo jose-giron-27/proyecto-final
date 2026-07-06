@@ -105,4 +105,34 @@ Dashboard | AutoMenu AI
     </div>
 
 </div>
+<div class="card shadow-sm mt-4">
+
+    <div class="card-header">
+        <h4>Menú público</h4>
+    </div>
+
+    <div class="card-body text-center">
+
+        <img
+            src="{{ url_for('generate_qr', slug=restaurante.slug) }}"
+            class="img-fluid mb-3"
+            style="max-width:220px;">
+
+        <p>
+
+            <strong>Enlace del menú:</strong>
+
+        </p>
+
+        <a
+            href="{{ menu_publico }}"
+            target="_blank">
+
+            {{ menu_publico }}
+
+        </a>
+
+    </div>
+
+</div>
 {% endblock %}

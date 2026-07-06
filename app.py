@@ -177,7 +177,7 @@ def profile():
 
     return render_template(
         "dashboard/profile.html",
-        restaurante=datos_restaurante
+        restaurante=datos_restaurante 
     )
 
 @app.route("/dashboard")
@@ -209,12 +209,19 @@ def dashboard():
                 menu_activo = True
                 break
 
-    return render_template(
-        "dashboard/index.html",
-        restaurante=restaurante,
-        total_platillos=total_platillos,
-        menu_activo=menu_activo
-    )
+        menu_publico = url_for(
+            "public_menu",
+            slug=restaurante["slug"],
+            _external=True
+        )
+
+        return render_template(
+            "dashboard/index.html",
+            restaurante=restaurante,
+            total_platillos=total_platillos,
+            menu_activo=menu_activo,
+            menu_publico=menu_publico
+        )
 
 @app.route("/dashboard/qr")
 @login_required
