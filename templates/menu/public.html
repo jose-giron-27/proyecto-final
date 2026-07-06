@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ restaurante.nombre }} | AutoMenu AI
+{% endblock %}
+
+{% block content %}
+
+
+{% if restaurante.imagen_portada %}
+
+<div class="mb-5">
+
+    <img
+        src="{{ restaurante.imagen_portada }}"
+        class="img-fluid w-100 rounded shadow"
+        style="max-height:350px; object-fit:cover;">
+
+</div>
+
+{% endif %}
+<div class="container py-5">
+
+    <!-- Restaurante -->
+    <div class="text-center mb-5">
+
+        {% if restaurante.logo %}
+        <img
+            src="{{ restaurante.logo }}"
+            class="rounded-circle shadow mb-3"
+            style="width:150px;height:150px;object-fit:cover;">
+        {% endif %}
+
+        <h1 class="fw-bold display-4">
+            {{ restaurante.nombre }}
+        </h1>
+        <p class="badge bg-success">
+
+            {{ restaurante.tipo_comida }}
+
+        </p>
+        <p class="text-muted">
+            {{ restaurante.descripcion }}
+        </p>
+
+        <p>
+            <strong>Horario:</strong>
+            {{ restaurante.horarios }}
+        <p>
+            <strong>Horario:</strong>
+            {{ restaurante.horarios }}
+        </p>
+
+        <p>
+            <strong>Dirección:</strong>
+            {{ restaurante.direccion }}
+        </p>
+
+        <div class="mt-3">
+
+            {% if restaurante.whatsapp %}
+            <a
+                href="https://wa.me/{{ restaurante.whatsapp }}"
+                class="btn btn-success me-2"
+                target="_blank">
+
+                WhatsApp
+
+            </a>
+            {% endif %}
+
+            {% if restaurante.instagram %}
+            <a
+                href="https://instagram.com/{{ restaurante.instagram }}"
+                class="btn btn-danger"
+                target="_blank">
+
+                Instagram
+            
+            </a>
+            {% endif %}
+            {% if restaurante.facebook %}
+            <a
+                href="{{ restaurante.facebook }}"
+                class="btn btn-primary"
+                target="_blank">
+
+                Facebook
+
+            </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- Platillos -->
+
+    <div class="row">
+
+            {% for platillo in platillos %}
+
+            <div class="col-lg-4">
+
+                <div class="card shadow h-100">
+
+                    {% if platillo.imagen_url %}
+                    <img
+                        src="{{ platillo.imagen_url }}"
+                        class="card-img-top"
+                        style="height:220px;object-fit:cover;">
+                    {% endif %}
+
+                    <div class="card-body">
+
+                        <h4>
+
+                            {{ platillo.name }}
+
+                        </h4>
+
+                        <p class="text-muted
+
+            <div class="card shadow h-100">
+
+                {% if platillo.imagen_url %}
+                <img
+                    src="{{ platillo.imagen_url }}"
+                    class="card-img-top"
+                    style="height:220px;object-fit:cover;">
+                {% endif %}
+
+                <div class="card-body">
+
+                    <h4>
+
+                        {{ platillo.name }}
+
+                    </h4>
+
+                    <p class="text-muted">
+
+                        {% if platillo.ai_description %}
+
+                        {{ platillo.ai_description }}
+
+                        {% else %}
+
+                        {{ platillo.description }}
+
+                        {% endif %}
+
+                    </p>
+
+                    <p>
+
+                        <span class="badge bg-primary me-2">
+
+                            {{ platillo.category }}
+
+                        </span>
+
+                    </p>
+
+                    {% if platillo.tags %}
+
+                    <p>
+
+                        <strong>Etiquetas:</strong>
+
+                        {{ platillo.tags }}
+
+                    </p>
+
+                    {% endif %}
+
+                    <h5 class="text-success">
+
+                        Q {{ platillo.price }}
+
+                    </h5>
+
+                </div>
+
+            </div>
+
+        </div>
+        {% endif %}
+        
+
+    </div>
+
+</div>
+<style>
+
+.card img{
+    object-fit:cover;
+}
+
+@media (max-width:768px){
+
+    h1{
+        font-size:2rem;
+    }
+
+    .card{
+        margin-bottom:20px;
+    }
+
+    .btn{
+        width:100%;
+        margin-bottom:10px;
+    }
+
+}
+
+</style>
+
+{% endblock %}
