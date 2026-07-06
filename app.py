@@ -129,19 +129,16 @@ def profile():
 
         datos = {
 
-            "user_id": session["user"],
-            "nombre": request.form["nombre"],
-            "descripcion": request.form["descripcion"],
-            "direccion": request.form["direccion"],
-            "telefono": request.form["telefono"],
-            "whatsapp": request.form["whatsapp"],
-            "instagram": request.form["instagram"],
-            "tipo_comida": request.form["tipo_comida"],
-            "horarios": request.form["horarios"],
-            "logo": request.form["logo"],
-            "imagen_portada": request.form["imagen_portada"]
-
-        }
+            "name": request.form["nombre"],
+            "description": request.form["descripcion"],
+            "address": request.form["direccion"],
+         "phone": request.form["telefono"],
+         "whatsapp": request.form["whatsapp"],
+         "instagram": request.form["instagram"],
+         "opening_hours": request.form["horarios"],
+         "logo_url": request.form["logo"],
+        "cover_image_url": request.form["imagen_portada"]
+}
 
         # genera el slug automáticamente
         slug = datos["nombre"].lower()
