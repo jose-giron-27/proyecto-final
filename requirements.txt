@@ -2,7 +2,6 @@ flask
 supabase
 python-dotenv
 openai
-anthropic
 qrcode[pil]
 pillow
 requests
