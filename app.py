@@ -187,27 +187,27 @@ def dashboard():
     Vista principal del restaurante.
     """
 
-    restaurante = obtener_restaurante(session["user"])
+    try:
 
-    if not restaurante["ok"] or not restaurante["data"]:
-        return manejar_error(
-            "Restaurante no encontrado",
-            contexto="Dashboard"
-        )
+        restaurante = obtener_restaurante(session["user"])
 
-    restaurante = restaurante["data"][0]
-    resultado = get_dishes(restaurante["id"]) 
+        if not restaurante["ok"] or not restaurante["data"]:
+            raise Exception("No se encontró el restaurante.")
 
-    total_platillos = 0
-    menu_activo = False
+        restaurante = restaurante["data"][0]
 
-    if resultado["ok"]:
-        total_platillos = len(resultado["data"])
+        resultado = get_dishes(restaurante["id"])
 
-        for platillo in resultado["data"]:
-            if platillo["is_available"]:
-                menu_activo = True
-                break
+        total_platillos = 0
+        menu_activo = False
+
+        if resultado["ok"]:
+            total_platillos = len(resultado["data"])
+
+            for platillo in resultado["data"]:
+                if platillo["is_available"]:
+                    menu_activo = True
+                    break
 
         menu_publico = url_for(
             "public_menu",
@@ -223,6 +223,14 @@ def dashboard():
             menu_publico=menu_publico
         )
 
+    except Exception as e:
+
+        print(f"[Dashboard] {e}")
+
+        return manejar_error(
+            e,
+            contexto="Dashboard"
+        )
 @app.route("/dashboard/qr")
 @login_required
 def qr_dashboard():
