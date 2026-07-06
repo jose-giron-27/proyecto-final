@@ -1,67 +1,69 @@
 # ai_utils.py - Funciones de IA generativa de AutoMenu AI
-# Importado por app.py para las rutas de generación con IA
-# Usa while loop para reintentar llamadas fallidas a la API
+# Usa la API de OpenAI para generar contenido para los platillos
+# Importado por app.py para las rutas de generacion con IA
 
-import anthropic
+from openai import OpenAI
 import base64
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
 
-cliente = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+# Inicializar el cliente de OpenAI con la API key del .env
+cliente = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ─── Generador de descripciones ───────────────────────────────
 def generar_descripcion(nombre, ingredientes, precio, tono="casual", max_intentos=3):
     """
-    Genera una descripción atractiva del platillo.
+    Genera una descripcion atractiva del platillo.
     Usa while para reintentar si la API falla.
     """
     intentos = 0
     while intentos < max_intentos:
         try:
-            prompt = f"""Genera una descripción atractiva para un platillo de restaurante.
+            prompt = f"""Genera una descripcion atractiva para un platillo de restaurante.
 Nombre: {nombre}
 Ingredientes: {ingredientes}
 Precio: Q{precio}
 Tono: {tono}
-La descripción debe ser breve (2-3 oraciones), clara y vendedora. Solo devuelve la descripción, sin títulos ni explicaciones."""
+La descripcion debe ser breve (2-3 oraciones), clara y vendedora. Solo devuelve la descripcion, sin titulos ni explicaciones."""
 
-            respuesta = cliente.messages.create(
-                model="claude-sonnet-4-6",
+            respuesta = cliente.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=200,
                 messages=[{"role": "user", "content": prompt}]
             )
-            return {"ok": True, "descripcion": respuesta.content[0].text.strip()}
+            return {"ok": True, "descripcion": respuesta.choices[0].message.content.strip()}
 
         except Exception as e:
             intentos += 1
             print(f"[ai_utils] Intento {intentos} fallido en generar_descripcion: {e}")
 
-    return {"ok": False, "error": "No se pudo generar la descripción después de varios intentos"}
+    return {"ok": False, "error": "No se pudo generar la descripcion despues de varios intentos"}
 
-# ─── Traductor de descripción ─────────────────────────────────
-def traducir_descripcion(descripcion, idioma="inglés", max_intentos=3):
-    """Traduce la descripción del platillo al idioma indicado."""
+# ─── Traductor de descripcion ─────────────────────────────────
+def traducir_descripcion(descripcion, idioma="ingles", max_intentos=3):
+    """Traduce la descripcion del platillo al idioma indicado."""
     intentos = 0
     while intentos < max_intentos:
         try:
-            prompt = f"""Traduce esta descripción de platillo al {idioma}. 
-Solo devuelve la traducción, sin explicaciones:
+            prompt = f"""Traduce esta descripcion de platillo al {idioma}.
+Solo devuelve la traduccion, sin explicaciones:
 {descripcion}"""
 
-            respuesta = cliente.messages.create(
-                model="claude-sonnet-4-6",
+            respuesta = cliente.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=200,
                 messages=[{"role": "user", "content": prompt}]
             )
-            return {"ok": True, "traduccion": respuesta.content[0].text.strip()}
+            return {"ok": True, "traduccion": respuesta.choices[0].message.content.strip()}
 
         except Exception as e:
             intentos += 1
             print(f"[ai_utils] Intento {intentos} fallido en traducir_descripcion: {e}")
 
-    return {"ok": False, "error": "No se pudo traducir después de varios intentos"}
+    return {"ok": False, "error": "No se pudo traducir despues de varios intentos"}
 
 # ─── Generador de captions para redes ────────────────────────
 def generar_caption(nombre, descripcion, precio, red="instagram", max_intentos=3):
@@ -71,46 +73,46 @@ def generar_caption(nombre, descripcion, precio, red="instagram", max_intentos=3
         try:
             prompt = f"""Genera un caption para {red} de este platillo de restaurante.
 Nombre: {nombre}
-Descripción: {descripcion}
+Descripcion: {descripcion}
 Precio: Q{precio}
 Debe incluir emojis, ser llamativo y tener hashtags relevantes. Solo devuelve el caption."""
 
-            respuesta = cliente.messages.create(
-                model="claude-sonnet-4-6",
+            respuesta = cliente.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=300,
                 messages=[{"role": "user", "content": prompt}]
             )
-            return {"ok": True, "caption": respuesta.content[0].text.strip()}
+            return {"ok": True, "caption": respuesta.choices[0].message.content.strip()}
 
         except Exception as e:
             intentos += 1
             print(f"[ai_utils] Intento {intentos} fallido en generar_caption: {e}")
 
-    return {"ok": False, "error": "No se pudo generar el caption después de varios intentos"}
+    return {"ok": False, "error": "No se pudo generar el caption despues de varios intentos"}
 
 # ─── Sugeridor de combos ──────────────────────────────────────
 def sugerir_combo(lista_platillos, max_intentos=3):
-    """Analiza los platillos existentes y sugiere un combo con descripción."""
+    """Analiza los platillos existentes y sugiere un combo con descripcion."""
     intentos = 0
     while intentos < max_intentos:
         try:
             nombres = [p["nombre"] for p in lista_platillos]
-            prompt = f"""Tengo estos platillos en mi restaurante: {', '.join(nombres)}.
+            prompt = f"""Tengo estos platillos en mi restaurante: {", ".join(nombres)}.
 Sugiere el mejor combo posible combinando 2 o 3 de ellos.
-Devuelve: nombre del combo, platillos incluidos y una descripción corta de venta."""
+Devuelve: nombre del combo, platillos incluidos y una descripcion corta de venta."""
 
-            respuesta = cliente.messages.create(
-                model="claude-sonnet-4-6",
+            respuesta = cliente.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=300,
                 messages=[{"role": "user", "content": prompt}]
             )
-            return {"ok": True, "combo": respuesta.content[0].text.strip()}
+            return {"ok": True, "combo": respuesta.choices[0].message.content.strip()}
 
         except Exception as e:
             intentos += 1
             print(f"[ai_utils] Intento {intentos} fallido en sugerir_combo: {e}")
 
-    return {"ok": False, "error": "No se pudo sugerir el combo después de varios intentos"}
+    return {"ok": False, "error": "No se pudo sugerir el combo despues de varios intentos"}
 
 # ─── Recomendador de etiquetas ────────────────────────────────
 def recomendar_etiquetas(ingredientes, max_intentos=3):
@@ -123,83 +125,89 @@ Ingredientes: {ingredientes}
 Etiquetas posibles: vegetariano, vegano, picante, sin gluten, nuevo, popular, recomendado, ligero.
 Solo devuelve las etiquetas que apliquen, separadas por comas."""
 
-            respuesta = cliente.messages.create(
-                model="claude-sonnet-4-6",
+            respuesta = cliente.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=100,
                 messages=[{"role": "user", "content": prompt}]
             )
-            etiquetas = [e.strip() for e in respuesta.content[0].text.split(",")]
+            etiquetas = [e.strip() for e in respuesta.choices[0].message.content.split(",")]
             return {"ok": True, "etiquetas": etiquetas}
 
         except Exception as e:
             intentos += 1
             print(f"[ai_utils] Intento {intentos} fallido en recomendar_etiquetas: {e}")
 
-    return {"ok": False, "error": "No se pudieron recomendar etiquetas después de varios intentos"}
+    return {"ok": False, "error": "No se pudieron recomendar etiquetas despues de varios intentos"}
 
 # ─── Mejorador de nombres ─────────────────────────────────────
 def mejorar_nombre(nombre_original, max_intentos=3):
-    """Sugiere nombres más llamativos para el platillo."""
+    """Sugiere nombres mas llamativos para el platillo."""
     intentos = 0
     while intentos < max_intentos:
         try:
-            prompt = f"""Sugiere 4 nombres más atractivos y creativos para este platillo: {nombre_original}.
-Solo devuelve los 4 nombres, uno por línea, sin numeración ni explicaciones."""
+            prompt = f"""Sugiere 4 nombres mas atractivos y creativos para este platillo: {nombre_original}.
+Solo devuelve los 4 nombres, uno por linea, sin numeracion ni explicaciones."""
 
-            respuesta = cliente.messages.create(
-                model="claude-sonnet-4-6",
+            respuesta = cliente.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=150,
                 messages=[{"role": "user", "content": prompt}]
             )
-            nombres = [n.strip() for n in respuesta.content[0].text.strip().split("\n") if n.strip()]
+            nombres = [n.strip() for n in respuesta.choices[0].message.content.strip().split("\n") if n.strip()]
             return {"ok": True, "nombres": nombres}
 
         except Exception as e:
             intentos += 1
             print(f"[ai_utils] Intento {intentos} fallido en mejorar_nombre: {e}")
 
-    return {"ok": False, "error": "No se pudieron sugerir nombres después de varios intentos"}
+    return {"ok": False, "error": "No se pudieron sugerir nombres despues de varios intentos"}
 
-# ─── Escaneo de menú desde imagen ────────────────────────────
+# ─── Escaneo de menu desde imagen ────────────────────────────
 def escanear_menu_desde_imagen(imagen_bytes, max_intentos=3):
     """
-    Recibe una imagen de un menú físico y extrae los platillos con IA de visión.
-    Retorna una lista de dicts con nombre, precio y categoría detectados.
+    Recibe una imagen de un menu fisico y extrae los platillos con IA de vision.
+    Retorna una lista de dicts con nombre, precio y categoria detectados.
     """
     intentos = 0
     while intentos < max_intentos:
         try:
+            # Convertir los bytes de la imagen a base64
             imagen_base64 = base64.standard_b64encode(imagen_bytes).decode("utf-8")
 
-            prompt = """Analizá esta imagen de un menú de restaurante.
-Extraé todos los platillos que puedas identificar y devolvé SOLO un JSON válido con esta estructura:
+            prompt = """Analiza esta imagen de un menu de restaurante.
+Extrae todos los platillos que puedas identificar y devuelve SOLO un JSON valido con esta estructura:
 [{"nombre": "...", "precio": 0.0, "categoria": "..."}]
-Si no podés leer el precio, usá 0.0. Si no podés identificar la categoría, usá "general"."""
+Si no puedes leer el precio, usa 0.0. Si no puedes identificar la categoria, usa "general"."""
 
-            respuesta = cliente.messages.create(
-                model="claude-sonnet-4-6",
+            # Llamar a la API con vision (gpt-4o soporta imagenes)
+            respuesta = cliente.chat.completions.create(
+                model="gpt-4o",
                 max_tokens=1000,
                 messages=[{
                     "role": "user",
                     "content": [
                         {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "image/jpeg",
-                                "data": imagen_base64
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{imagen_base64}"
                             }
                         },
                         {"type": "text", "text": prompt}
                     ]
                 }]
             )
-            import json
-            platillos = json.loads(respuesta.content[0].text.strip())
+
+            # Limpiar la respuesta y parsear el JSON
+            texto = respuesta.choices[0].message.content.strip()
+            texto_limpio = texto.replace("```json", "").replace("```", "").strip()
+            platillos = json.loads(texto_limpio)
             return {"ok": True, "platillos": platillos}
 
+        except json.JSONDecodeError as e:
+            intentos += 1
+            print(f"[ai_utils] Intento {intentos} fallido en escanear_menu_desde_imagen (JSON invalido): {e}")
         except Exception as e:
             intentos += 1
             print(f"[ai_utils] Intento {intentos} fallido en escanear_menu_desde_imagen: {e}")
 
-    return {"ok": False, "error": "No se pudo escanear la imagen después de varios intentos"}
+    return {"ok": False, "error": "No se pudo escanear la imagen despues de varios intentos"}
