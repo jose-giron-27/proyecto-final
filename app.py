@@ -196,10 +196,24 @@ def dashboard():
         )
 
     restaurante = restaurante["data"][0]
+    resultado = get_dishes(restaurante["id"]) 
+
+    total_platillos = 0
+    menu_activo = False
+
+    if resultado["ok"]:
+        total_platillos = len(resultado["data"])
+
+        for platillo in resultado["data"]:
+            if platillo["is_available"]:
+                menu_activo = True
+                break
 
     return render_template(
         "dashboard/index.html",
-        restaurante=restaurante
+        restaurante=restaurante,
+        total_platillos=total_platillos,
+        menu_activo=menu_activo
     )
 
 @app.route("/dashboard/qr")

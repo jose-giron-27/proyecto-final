@@ -29,5 +29,51 @@ Dashboard | AutoMenu AI
     </div>
 
 </div>
+<div class="row mt-4">
 
+    <div class="col-md-6 mb-3">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body text-center">
+
+                <h5>Total de platillos</h5>
+
+                <h2>{{ total_platillos }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-6 mb-3">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body text-center">
+
+                <h5>Estado del menú</h5>
+
+                {% if menu_activo %}
+
+                    <span class="badge bg-success">
+                        Activo
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-danger">
+                        Sin platillos disponibles
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 {% endblock %}
