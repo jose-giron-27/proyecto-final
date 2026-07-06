@@ -1,13 +1,15 @@
 # app.py - Punto de entrada principal de AutoMenu AI
 # Inicializa Flask, registra las rutas y corre el servidor
-
-from dotenv import load_dotenv
-from error_handler import manejar_error
-import qrcode
 import io
-from io import BytesIO
 import os
 import re
+from io import BytesIO
+from functools import wraps
+
+import qrcode
+
+from dotenv import load_dotenv
+
 from flask import (
     Flask,
     render_template,
@@ -18,9 +20,9 @@ from flask import (
     flash,
     send_file
 )
-from dotenv import load_dotenv
+
 from error_handler import manejar_error
-from functools import wraps
+
 from db import (
     auth_register,
     auth_login,
@@ -135,11 +137,12 @@ def profile():
          "instagram": request.form["instagram"],
          "opening_hours": request.form["horarios"],
          "logo_url": request.form["logo"],
-        "cover_image_url": request.form["imagen_portada"]
+        "cover_image_url": request.form["imagen_portada"],
+        "user_id": session["user"]
 }
 
         # genera el slug automáticamente
-        slug = datos["nombre"].lower()
+        slug = datos["name"].lower()
         slug = re.sub(r"[^a-z0-9]+", "-", slug)
         slug = slug.strip("-")
         datos["slug"] = slug
