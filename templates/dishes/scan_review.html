@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}
+Revisar escaneo | AutoMenu AI
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-10">
+
+            <div class="card shadow-lg border-0 rounded-4">
+
+                <div class="card-body p-5">
+
+                    <h1 class="fw-bold text-center mb-3">
+
+                        Revisar resultados del escaneo
+
+                    </h1>
+
+                    <p class="text-center text-muted mb-5">
+
+                        Verificá la información detectada por la Inteligencia Artificial antes de guardar los platillos.
+
+                    </p>
+
+                    <div class="alert alert-warning">
+
+                        ⚠️ Revisá cuidadosamente los datos antes de confirmarlos.
+
+                    </div>
+
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle">
+
+                            <thead class="table-light">
+
+                                <tr>
+
+                                    <th>Platillo</th>
+                                    <th>Precio</th>
+                                    <th>Categoría</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>Hamburguesa Clásica</td>
+                                    <td>Q55.00</td>
+                                    <td>Comida rápida</td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>Pizza Margarita</td>
+                                    <td>Q80.00</td>
+                                    <td>Pizzas</td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-3 mt-4">
+
+                        <a
+                            href="/scan"
+                            class="btn btn-outline-secondary">
+
+                            Volver
+
+                        </a>
+
+                        <button
+                            class="btn btn-success">
+
+                            Guardar platillos
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
