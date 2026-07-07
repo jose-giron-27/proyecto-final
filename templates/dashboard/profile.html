@@ -50,7 +50,7 @@ Perfil del Restaurante | AutoMenu AI
                             <textarea
                              name="descripcion"
                              class="form-control"
-                             rows="3">{{ restaurante.descripcion if restaurante else '' }}</textarea>
+                             rows="3">{{ restaurante.description if restaurante else '' }}</textarea>
                         </div>
 
                         <div class="mb-3">
@@ -59,7 +59,7 @@ Perfil del Restaurante | AutoMenu AI
                              type="text"
                              name="direccion"
                              class="form-control"
-                            value="{{ restaurante.adress if restaurante else '' }}">
+                            value="{{ restaurante.address if restaurante else '' }}">
                                 
                         </div>
 
@@ -69,7 +69,7 @@ Perfil del Restaurante | AutoMenu AI
                              type="text"
                              name="horarios"
                              class="form-control"
-                             value="{{ restaurante.oppening_hours if restaurante else '' }}">
+                             value="{{ restaurante.opening_hours if restaurante else '' }}">
                         </div>
 
                         <div class="mb-3">
