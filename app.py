@@ -1,10 +1,14 @@
 # app.py - Punto de entrada principal de AutoMenu AI
 # Inicializa Flask, registra las rutas y corre el servidor
-
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-from dotenv import load_dotenv
-from error_handler import manejar_error
+import io
 import os
+import re
+from io import BytesIO
+from functools import wraps
+
+import qrcode
+
+from dotenv import load_dotenv
 
 from flask import (
     Flask,
@@ -13,13 +17,22 @@ from flask import (
     redirect,
     url_for,
     session,
-    flash
+    flash,
+    send_file
 )
-from db import auth_register, auth_login, auth_logout
-from dotenv import load_dotenv
+
 from error_handler import manejar_error
-import os
-from functools import wraps
+
+from db import (
+    auth_register,
+    auth_login,
+    auth_logout,
+    guardar_restaurante,
+    actualizar_restaurante,
+    obtener_restaurante,
+    get_restaurant_by_slug,
+    get_dishes
+)
 # Cargar variables de entorno desde .env
 load_dotenv()
 
@@ -106,19 +119,194 @@ def logout():
 
     return redirect(url_for("login"))
 
+# ─── Perfil del restaurante ───────────────────────────────────
+
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+
+    if request.method == "POST":
+
+        datos = {
+
+            "name": request.form["nombre"],
+            "description": request.form["descripcion"],
+            "address": request.form["direccion"],
+         "phone": request.form["telefono"],
+         "whatsapp": request.form["whatsapp"],
+         "instagram": request.form["instagram"],
+         "opening_hours": request.form["horarios"],
+         "logo_url": request.form["logo"],
+        "cover_image_url": request.form["imagen_portada"],
+        "user_id": session["user"]
+}
+
+        # genera el slug automáticamente
+        slug = datos["name"].lower()
+        slug = re.sub(r"[^a-z0-9]+", "-", slug)
+        slug = slug.strip("-")
+        datos["slug"] = slug
+
+        restaurante = obtener_restaurante(session["user"])
+
+        if restaurante["ok"] and restaurante["data"]:
+
+            actualizar_restaurante(
+                restaurante["data"][0]["id"],
+                datos
+            )
+
+            flash("Perfil actualizado correctamente.", "success")
+
+        else:
+
+            guardar_restaurante(datos)
+
+            flash("Perfil creado correctamente.", "success")
+
+        return redirect(url_for("profile"))
+
+    restaurante = obtener_restaurante(session["user"])
+
+    datos_restaurante = {}
+
+    if restaurante["ok"] and restaurante["data"]:
+        datos_restaurante = restaurante["data"][0]
+
+    return render_template(
+        "dashboard/profile.html",
+        restaurante=datos_restaurante 
+    )
 
 @app.route("/dashboard")
 @login_required
 def dashboard():
     """
-    Dashboard temporal mientras se desarrolla la Fase 09.
+    Vista principal del restaurante.
     """
-    return "Bienvenido al Dashboard de AutoMenu AI"
+
+    try:
+
+        restaurante = obtener_restaurante(session["user"])
+
+        if not restaurante["ok"] or not restaurante["data"]:
+            raise Exception("No se encontró el restaurante.")
+
+        restaurante = restaurante["data"][0]
+
+        resultado = get_dishes(restaurante["id"])
+
+        total_platillos = 0
+        menu_activo = False
+
+        if resultado["ok"]:
+            total_platillos = len(resultado["data"])
+
+            for platillo in resultado["data"]:
+                if platillo["is_available"]:
+                    menu_activo = True
+                    break
+
+        menu_publico = url_for(
+            "public_menu",
+            slug=restaurante["slug"],
+            _external=True
+        )
+
+        return render_template(
+            "dashboard/index.html",
+            restaurante=restaurante,
+            total_platillos=total_platillos,
+            menu_activo=menu_activo,
+            menu_publico=menu_publico
+        )
+
+    except Exception as e:
+
+        print(f"[Dashboard] {e}")
+
+        return manejar_error(
+            e,
+            contexto="Dashboard"
+        )
+@app.route("/dashboard/qr")
+@login_required
+def qr_dashboard():
+    """
+    Muestra el código QR del restaurante.
+    """
+
+    restaurante = obtener_restaurante(session["user"])
+
+    if not restaurante["ok"] or not restaurante["data"]:
+        return manejar_error(
+            "Restaurante no encontrado",
+            contexto="Código QR"
+        )
+
+    restaurante = restaurante["data"][0]
+
+    return render_template(
+        "dashboard/qr.html",
+        restaurante=restaurante
+    )
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+@app.route("/menu/<slug>")
+def public_menu(slug): 
+    """
+    Muestra el menú público de un restaurante.
+    No requiere iniciar sesión.
+    """
+
+    restaurante = get_restaurant_by_slug(slug) #busca el restaurante
+
+    if not restaurante["ok"] or not restaurante["data"]:
+        return manejar_error(
+            "Restaurante no encontrado",
+            contexto="Menú público"
+        ) #por si no existe el restarurante se cumple este if 
+
+    restaurante = restaurante["data"][0]
+
+    resultado = get_dishes(restaurante["id"]) # se cumple si el restaaurante si existe 
+
+    platillos = []
+
+    if resultado["ok"]:
+        for platillo in resultado["data"]:
+            if platillo["is_available"]: #solo muestran los platillos disponibles
+                platillos.append(platillo)
+
+    return render_template(
+         "menu/public.html",
+         restaurante=restaurante,
+         platillos=platillos
+        ) # envía toda la info a html
+
+@app.route("/qr/<slug>") # genera un qr que automáticamente redirige al menú público del restaurante
+def generate_qr(slug):
+    """
+    Generates a QR code that points to the restaurant's public menu.
+    """
+
+    url = request.host_url.rstrip("/") + url_for("public_menu", slug=slug)
+
+    qr = qrcode.make(url)
+
+    buffer = BytesIO()
+
+    qr.save(buffer, format="PNG")
+
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        mimetype="image/png"
+    )
 # ─── Manejo global de errores ─────────────────────────────────
 
 # ─── Rutas de IA generativa ───────────────────────────────────

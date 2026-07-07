@@ -138,7 +138,25 @@ def auth_logout():
             "ok": False,
             "error": str(e)
         }
+def guardar_restaurante(datos):
+    """
+    Guarda un restaurante nuevo en la tabla restaurants.
+    """
+    return db_insert("restaurants", datos)
 
+
+def actualizar_restaurante(id_restaurante, datos):
+    """
+    Actualiza la información de un restaurante existente.
+    """
+    return db_update("restaurants", id_restaurante, datos)
+
+
+def obtener_restaurante(id_usuario):
+    """
+    Busca el restaurante asociado al usuario.
+    """
+    return db_get("restaurants", {"user_id": id_usuario})
 
 # ─── Punto de entrada para pruebas ───────────────────────────
 
@@ -178,6 +196,12 @@ def toggle_dish_availability(dish_id, is_available):
         "is_available": is_available,
         "updated_at": datetime.now().isoformat()
     })
+
+def get_restaurant_by_slug(slug):
+    """
+    Obtiene un restaurante usando su slug público.
+    """
+    return db_get("restaurants", filtros={"slug": slug})
 
 if __name__ == "__main__":
     print("Probando conexión con Supabase...")
