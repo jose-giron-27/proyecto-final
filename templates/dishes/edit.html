@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}
+Editar platillo | AutoMenu AI
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-lg border-0 rounded-4">
+
+                <div class="card-body p-5">
+
+                    <h2 class="fw-bold text-center mb-3">
+
+                        Editar platillo
+
+                    </h2>
+
+                    <p class="text-center text-muted mb-5">
+
+                        Actualizá la información del platillo.
+
+                    </p>
+
+                    <div class="d-grid mb-4">
+
+                        <button
+                            class="btn btn-success btn-lg">
+
+                            🤖 Regenerar descripción con IA
+
+                        </button>
+
+                    </div>
+
+                    <form method="POST">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Nombre del platillo
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="name"
+                                class="form-control form-control-lg"
+                                value="{{ platillo.name }}"
+                                required>
+
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Precio
+
+                                </label>
+
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="price"
+                                    class="form-control"
+                                    value="{{ platillo.price }}">
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Categoría
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="category"
+                                    class="form-control"
+                                    value="{{ platillo.category }}">
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Descripción
+
+                            </label>
+
+                            <textarea
+                                name="description"
+                                rows="5"
+                                class="form-control">{{ platillo.description }}</textarea>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Imagen (URL)
+
+                            </label>
+
+                            <input
+                                type="url"
+                                name="image_url"
+                                class="form-control"
+                                value="{{ platillo.image_url }}">
+
+                        </div>
+
+                        <div class="form-check mb-4">
+
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                name="is_available"
+                                {% if platillo.is_available %}checked{% endif %}>
+
+                            <label class="form-check-label">
+
+                                Platillo disponible
+
+                            </label>
+
+                        </div>
+
+                        <div class="d-grid">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary btn-lg">
+
+                                Guardar cambios
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
