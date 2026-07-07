@@ -1,13 +1,15 @@
 # app.py - Punto de entrada principal de AutoMenu AI
 # Inicializa Flask, registra las rutas y corre el servidor
-
-from dotenv import load_dotenv
-from error_handler import manejar_error
-import qrcode
 import io
-from io import BytesIO
 import os
 import re
+from io import BytesIO
+from functools import wraps
+
+import qrcode
+
+from dotenv import load_dotenv
+
 from flask import (
     Flask,
     render_template,
@@ -18,9 +20,9 @@ from flask import (
     flash,
     send_file
 )
-from dotenv import load_dotenv
+
 from error_handler import manejar_error
-from functools import wraps
+
 from db import (
     auth_register,
     auth_login,
@@ -127,22 +129,20 @@ def profile():
 
         datos = {
 
-            "user_id": session["user"],
-            "nombre": request.form["nombre"],
-            "descripcion": request.form["descripcion"],
-            "direccion": request.form["direccion"],
-            "telefono": request.form["telefono"],
-            "whatsapp": request.form["whatsapp"],
-            "instagram": request.form["instagram"],
-            "tipo_comida": request.form["tipo_comida"],
-            "horarios": request.form["horarios"],
-            "logo": request.form["logo"],
-            "imagen_portada": request.form["imagen_portada"]
-
-        }
+            "name": request.form["nombre"],
+            "description": request.form["descripcion"],
+            "address": request.form["direccion"],
+         "phone": request.form["telefono"],
+         "whatsapp": request.form["whatsapp"],
+         "instagram": request.form["instagram"],
+         "opening_hours": request.form["horarios"],
+         "logo_url": request.form["logo"],
+        "cover_image_url": request.form["imagen_portada"],
+        "user_id": session["user"]
+}
 
         # genera el slug automáticamente
-        slug = datos["nombre"].lower()
+        slug = datos["name"].lower()
         slug = re.sub(r"[^a-z0-9]+", "-", slug)
         slug = slug.strip("-")
         datos["slug"] = slug
@@ -175,17 +175,60 @@ def profile():
 
     return render_template(
         "dashboard/profile.html",
-        restaurante=datos_restaurante
+        restaurante=datos_restaurante 
     )
 
 @app.route("/dashboard")
 @login_required
 def dashboard():
     """
-    Dashboard temporal mientras se desarrolla la Fase 09.
+    Vista principal del restaurante.
     """
-    return "Bienvenido al Dashboard de AutoMenu AI"
 
+    try:
+
+        restaurante = obtener_restaurante(session["user"])
+
+        if not restaurante["ok"] or not restaurante["data"]:
+            raise Exception("No se encontró el restaurante.")
+
+        restaurante = restaurante["data"][0]
+
+        resultado = get_dishes(restaurante["id"])
+
+        total_platillos = 0
+        menu_activo = False
+
+        if resultado["ok"]:
+            total_platillos = len(resultado["data"])
+
+            for platillo in resultado["data"]:
+                if platillo["is_available"]:
+                    menu_activo = True
+                    break
+
+        menu_publico = url_for(
+            "public_menu",
+            slug=restaurante["slug"],
+            _external=True
+        )
+
+        return render_template(
+            "dashboard/index.html",
+            restaurante=restaurante,
+            total_platillos=total_platillos,
+            menu_activo=menu_activo,
+            menu_publico=menu_publico
+        )
+
+    except Exception as e:
+
+        print(f"[Dashboard] {e}")
+
+        return manejar_error(
+            e,
+            contexto="Dashboard"
+        )
 @app.route("/dashboard/qr")
 @login_required
 def qr_dashboard():
