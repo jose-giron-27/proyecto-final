@@ -16,28 +16,43 @@ Nuevo platillo | AutoMenu AI
 
                 <div class="card-body p-5">
 
-                    <h2 class="fw-bold text-center mb-3">
-
+                    <h1 class="fw-bold text-center mb-3">
                         Crear nuevo platillo
-
-                    </h2>
+                    </h1>
 
                     <p class="text-center text-muted mb-5">
 
-                        Agregá un nuevo platillo a tu menú digital.
+                        Completá la información del platillo o utilizá la Inteligencia Artificial para generar una descripción profesional.
 
                     </p>
 
-                    <div class="d-grid mb-4">
+                    <div class="alert alert-success border-0 shadow-sm mb-4">
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                🤖 Asistente IA
+                            </h5>
+
+                            <small>
+                                Generá automáticamente una descripción atractiva para este platillo.
+                            </small>
+
+                        </div>
 
                         <button
+                            type="button"
                             class="btn btn-success btn-lg">
 
-                            🤖 Generar descripción con IA
+                            Generar descripción con IA
 
                         </button>
 
                     </div>
+
+                </div>
 
                     <form method="POST">
 
@@ -46,6 +61,7 @@ Nuevo platillo | AutoMenu AI
                             <label class="form-label">
 
                                 Nombre del platillo
+                                placeholder="Ej. Pizza Margarita"
 
                             </label>
 
@@ -71,7 +87,7 @@ Nuevo platillo | AutoMenu AI
                                     type="number"
                                     step="0.01"
                                     name="price"
-                                    class="form-control">
+                                    class="form-control form-control-lg">
 
                             </div>
 
@@ -80,13 +96,14 @@ Nuevo platillo | AutoMenu AI
                                 <label class="form-label">
 
                                     Categoría
+                                    placeholder="Ej. Bebidas, Postres, Entradas..."
 
                                 </label>
 
                                 <input
                                     type="text"
                                     name="category"
-                                    class="form-control">
+                                    class="form-control form-control-lg">
 
                             </div>
 
@@ -97,6 +114,7 @@ Nuevo platillo | AutoMenu AI
                             <label class="form-label">
 
                                 Descripción
+                                Placeholder="Describe el platillo o utiliza la IA para generarla automáticamente."
 
                             </label>
 
@@ -112,13 +130,14 @@ Nuevo platillo | AutoMenu AI
                             <label class="form-label">
 
                                 Imagen (URL)
+                                placeholder="https://..."
 
                             </label>
 
                             <input
                                 type="url"
                                 name="image_url"
-                                class="form-control">
+                                class="form-control form-control-lg">
 
                         </div>
 
@@ -133,7 +152,12 @@ Nuevo platillo | AutoMenu AI
                             <label class="form-check-label">
 
                                 Platillo disponible
+                                placeholder="Q 0.00"
+                                <p class="text-muted small mt-2">
 
+                                    Si desactivás este platillo, no aparecerá en el menú público.
+
+                                </p>
                             </label>
 
                         </div>
@@ -142,10 +166,20 @@ Nuevo platillo | AutoMenu AI
 
                             <button
                                 type="submit"
-                                class="btn btn-primary btn-lg">
+                                class="btn btn-success btn-lg shadow-sm">
 
                                 Guardar platillo
+                            <div class="text-center mt-3">
 
+                                <a
+                                    href="/dishes"
+                                    class="btn btn-outline-secondary">
+
+                                    Cancelar
+
+                                </a>
+
+                            </div>
                             </button>
 
                         </div>
