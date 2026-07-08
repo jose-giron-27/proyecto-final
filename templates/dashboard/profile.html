@@ -140,6 +140,49 @@ Perfil del Restaurante | AutoMenu AI
 
                     </form>
 
+                    <!-- Fase 12: Plan de suscripción (demo con Stripe, modo test) -->
+                    <div class="card border-0 shadow-sm rounded-4 mt-4">
+
+                        <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                            <div>
+
+                                <h5 class="fw-bold mb-1">
+                                    Plan actual:
+                                    {% if restaurante and restaurante.plan == "pro" %}
+                                        <span class="badge bg-success">Pro</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Gratis</span>
+                                    {% endif %}
+                                </h5>
+
+                                {% if restaurante and restaurante.plan == "pro" %}
+                                    <p class="text-muted mb-0">
+                                        Ya tenés acceso a platillos ilimitados, IA y todas las funciones Pro.
+                                    </p>
+                                {% else %}
+                                    <p class="text-muted mb-0">
+                                        Actualizá a Pro (GTQ 249.99/mes) para desbloquear platillos ilimitados y las funciones de IA.
+                                    </p>
+                                {% endif %}
+
+                            </div>
+
+                            {% if not restaurante or restaurante.plan != "pro" %}
+
+                                <!-- Este form manda al usuario a Stripe Checkout (pago simulado, modo test) -->
+                                <form action="{{ url_for('subscribe') }}" method="POST">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        ⭐ Actualizar a Pro
+                                    </button>
+                                </form>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>

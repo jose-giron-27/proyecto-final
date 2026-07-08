@@ -33,6 +33,10 @@ from db import (
     get_restaurant_by_slug,
     get_dishes
 )
+
+# Fase 12 - Stripe (demo/simulación de pagos, modo test/sandbox)
+from stripe_utils import crear_checkout_session, verificar_pago
+
 # Cargar variables de entorno desde .env
 load_dotenv()
 
@@ -851,6 +855,83 @@ def dish_toggle(dish_id):
     
     # Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
+
+# ─── Fase 12: Stripe (demo/simulación de suscripción al Plan Pro) ──────────
+# IMPORTANTE: todo esto corre en modo TEST de Stripe. No se procesan pagos
+# reales bajo ninguna circunstancia; es únicamente para la demostración.
+
+@app.route("/subscribe", methods=["POST"])
+@login_required
+def subscribe():
+    """
+    Inicia el proceso de suscripción al Plan Pro.
+    Crea una sesión de Stripe Checkout y redirige al usuario a la página
+    de pago hosteada por Stripe (no construimos ningún formulario propio).
+    """
+    user_id = session.get("user")
+    restaurante = obtener_restaurante(user_id)
+
+    if not restaurante["ok"] or not restaurante["data"]:
+        flash("Primero completá el perfil de tu restaurante.", "warning")
+        return redirect(url_for("profile"))
+
+    restaurant_id = restaurante["data"][0]["id"]
+
+    # Stripe necesita el {CHECKOUT_SESSION_ID} literal en la URL: lo agrega
+    # automáticamente al redirigir de vuelta a nuestro sitio.
+    success_url = url_for("subscription_success", _external=True) + "?session_id={CHECKOUT_SESSION_ID}"
+    cancel_url = url_for("subscription_cancel", _external=True)
+
+    resultado = crear_checkout_session(
+        restaurant_id=restaurant_id,
+        success_url=success_url,
+        cancel_url=cancel_url,
+        email=session.get("email"),
+    )
+
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Crear sesión de pago")
+
+    # Redirige al usuario a la página de Stripe Checkout (fuera de nuestro sitio)
+    return redirect(resultado["url"])
+
+
+@app.route("/subscription/success")
+@login_required
+def subscription_success():
+    """
+    Stripe redirige acá después de un pago exitoso.
+    NUNCA confiamos únicamente en el redirect: verificamos directamente
+    con la API de Stripe que el pago sí se completó antes de activar el
+    Plan Pro en la base de datos.
+    """
+    session_id = request.args.get("session_id")
+
+    if not session_id:
+        flash("No se recibió información de la sesión de pago.", "danger")
+        return redirect(url_for("profile"))
+
+    resultado = verificar_pago(session_id)
+
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Verificar pago")
+
+    if resultado["pagado"] and resultado["restaurant_id"]:
+        actualizar_restaurante(resultado["restaurant_id"], {"plan": "pro"})
+        flash("¡Listo! Tu restaurante ahora tiene el Plan Pro. 🎉", "success")
+    else:
+        flash("El pago no se pudo confirmar. Intentá de nuevo.", "warning")
+
+    return redirect(url_for("profile"))
+
+
+@app.route("/subscription/cancel")
+@login_required
+def subscription_cancel():
+    """El usuario canceló el checkout desde Stripe antes de pagar."""
+    flash("Cancelaste el proceso de pago. Podés intentarlo de nuevo cuando quieras.", "info")
+    return redirect(url_for("profile"))
+
 
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
