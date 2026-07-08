@@ -101,9 +101,9 @@
 
                 <div class="card shadow h-100">
 
-                    {% if platillo.imagen_url %}
+                    {% if platillo.image_url %}
                     <img
-                        src="{{ platillo.imagen_url }}"
+                        src="{{ platillo.image_url }}"
                         class="card-img-top"
                         style="height:220px;object-fit:cover;">
                     {% endif %}
@@ -112,21 +112,13 @@
 
                         <h4>
 
-                            {{ platillo.nombre }}
+                            {{ platillo.name }}
 
                         </h4>
 
                         <p class="text-muted">
 
-                            {% if platillo.ai_description %}
-
-                            {{ platillo.ai_description }}
-
-                            {% else %}
-
-                            {{ platillo.ingredientes }}
-
-                            {% endif %}
+                            {{ platillo.description }}
 
                         </p>
 
@@ -134,19 +126,19 @@
 
                             <span class="badge bg-primary me-2">
 
-                                {{ platillo.categoria }}
+                                {{ platillo.category }}
 
                             </span>
 
                         </p>
 
-                        {% if platillo.etiquetas %}
+                        {% if platillo.tags %}
 
                         <p>
 
                             <strong>Etiquetas:</strong>
 
-                            {{ platillo.etiquetas|join(', ') }}
+                            {{ platillo.tags|join(', ') }}
 
                         </p>
 
@@ -154,7 +146,7 @@
 
                         <h5 class="text-success">
 
-                            Q {{ platillo.precio }}
+                            Q {{ platillo.price }}
 
                         </h5>
 

@@ -223,7 +223,7 @@ def dashboard():
             total_platillos = len(resultado["data"])
 
             for platillo in resultado["data"]:
-                if platillo["disponible"]:
+                if platillo["is_available"]:
                     menu_activo = True
                     break
 
@@ -298,7 +298,7 @@ def public_menu(slug):
 
     if resultado["ok"]:
         for platillo in resultado["data"]:
-            if platillo["disponible"]: #solo muestran los platillos disponibles
+            if platillo["is_available"]: #solo muestran los platillos disponibles
                 platillos.append(platillo)
 
     return render_template(
@@ -352,7 +352,7 @@ def ai_description(dish_id):
     2. Obtiene el tono elegido por el usuario (casual, elegante, juvenil, premium)
     3. Llama a generar_descripcion() en ai_utils.py (tiene while loop de reintentos)
     4. Guarda la generacion en la tabla ai_generations para historial
-    5. Actualiza el campo ai_description del platillo en Supabase
+    5. Guarda el resultado en el campo description del platillo en Supabase
     6. Redirige de vuelta a la lista de platillos
     """
     # Paso 1: Buscar el platillo en Supabase usando su ID
@@ -396,10 +396,14 @@ def ai_description(dish_id):
         "response": resultado_ia["descripcion"]
     })
 
-    # Paso 5: Actualizar el campo ai_description del platillo en Supabase
-    update_dish(dish_id, {"ai_description": resultado_ia["descripcion"]})
+    # Paso 5: Guardar la descripcion generada directo en el campo "description",
+    # que es el mismo campo editable que ve el usuario, para que pueda seguir
+    # modificandolo antes de guardar (en vez de un campo aparte de solo lectura)
+    update_dish(dish_id, {"description": resultado_ia["descripcion"]})
 
-    # Paso 6: Redirigir de vuelta a la lista de platillos
+    # Paso 6: Redirigir de vuelta a donde vino el click (lista o pantalla de editar)
+    if request.form.get("next") == "edit":
+        return redirect(url_for("dish_edit", dish_id=dish_id))
     return redirect(url_for("dish_list"))
 
 
@@ -432,7 +436,7 @@ def ai_translate(dish_id):
     idioma = request.form.get("idioma", "ingles")
 
     # Usamos la descripcion generada por IA si existe, si no la descripcion normal
-    descripcion = platillo.get("ai_description") or platillo.get("description", "")
+    descripcion = platillo.get("description", "")
 
     # Si el platillo no tiene descripcion, no hay nada que traducir
     if not descripcion:
@@ -489,7 +493,7 @@ def ai_caption(dish_id):
     red = request.form.get("red", "instagram")
 
     # Usamos la descripcion generada por IA si existe, si no la normal
-    descripcion = platillo.get("ai_description") or platillo.get("description", "")
+    descripcion = platillo.get("description", "")
 
     # Paso 3: Llamar a la funcion de caption con while loop de reintentos
     resultado_ia = generar_caption(
@@ -861,7 +865,8 @@ def dish_create():
         ingredientes = request.form.get("ingredientes", "")
         imagen_url = request.form.get("imagen_url", "")
         etiquetas = request.form.getlist("etiquetas")
-        validacion = agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url, etiquetas)
+        descripcion = request.form.get("descripcion", "")
+        validacion = agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url, etiquetas, descripcion)
         if not validacion["ok"]:
             return manejar_error(validacion["error"], contexto="Crear platillo")
         datos = validacion["platillo"]
@@ -885,12 +890,14 @@ def dish_edit(dish_id):
 
     if request.method == "POST":
         campos = {
-            "nombre": request.form.get("nombre", ""),
-            "precio": float(request.form.get("precio", 0)),
-            "categoria": request.form.get("categoria", ""),
-            "ingredientes": request.form.get("ingredientes", ""),
-            "imagen_url": request.form.get("imagen_url", ""),
-            "etiquetas": request.form.getlist("etiquetas"),
+            "name": request.form.get("nombre", ""),
+            "price": float(request.form.get("precio", 0)),
+            "category": request.form.get("categoria", ""),
+            "ingredients": request.form.get("ingredientes", ""),
+            "image_url": request.form.get("imagen_url", ""),
+            "tags": request.form.getlist("etiquetas"),
+            "description": request.form.get("descripcion", ""),
+            "is_available": request.form.get("disponible") == "on",
         }
         platillo_actualizado = editar_platillo(platillo, campos)
         if not platillo_actualizado["ok"]:
