@@ -7,7 +7,7 @@ import random
 import math
 
 # ─── Agregar platillo ─────────────────────────────────────────
-def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", etiquetas=None):
+def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", etiquetas=None, descripcion=""):
     """Crea un diccionario con la info del platillo y lo valida."""
     # Condicionales de validación
     if not nombre or nombre.strip() == "":
@@ -22,14 +22,21 @@ def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", eti
         etiquetas = []
 
     # Diccionario del platillo
+    # IMPORTANTE: estas llaves deben coincidir EXACTAMENTE con las columnas
+    # reales de la tabla "dishes" en Supabase (id, restaurant_id, name,
+    # description, ai_description, price, category, ingredients, image_url,
+    # is_available, tags, created_at, updated_at). Los parámetros de esta
+    # función siguen en español, pero el diccionario que se inserta a la
+    # base de datos usa los nombres de columna reales (en inglés).
     platillo = {
-        "nombre": nombre.strip(),          # str
-        "precio": float(precio),           # float
-        "categoria": categoria.lower(),    # str
-        "ingredientes": ingredientes,      # str
-        "imagen_url": imagen_url,          # str
-        "etiquetas": etiquetas,            # lista
-        "disponible": True,                # bool
+        "name": nombre.strip(),            # str
+        "price": float(precio),            # float
+        "category": categoria.lower(),     # str
+        "ingredients": ingredientes,       # str
+        "image_url": imagen_url,           # str
+        "description": descripcion,        # str
+        "tags": etiquetas,                 # lista
+        "is_available": True,              # bool
         "created_at": datetime.now().isoformat(),
         "updated_at": datetime.now().isoformat()
     }
@@ -48,7 +55,7 @@ def editar_platillo(platillo, campos):
 def eliminar_platillo(lista_platillos, nombre):
     """Elimina un platillo de la lista por nombre. Retorna True si lo encontró."""
     for i, p in enumerate(lista_platillos):
-        if p["nombre"].lower() == nombre.lower():
+        if p["name"].lower() == nombre.lower():
             lista_platillos.pop(i)
             return {"ok": True}
     return {"ok": False, "error": "Platillo no encontrado"}
@@ -58,7 +65,7 @@ def filtrar_por_categoria(lista_platillos, categoria):
     """Recorre la lista con for y retorna solo los de esa categoría."""
     resultado = []
     for platillo in lista_platillos:
-        if platillo["categoria"] == categoria.lower():
+        if platillo["category"] == categoria.lower():
             resultado.append(platillo)
     return resultado
 
@@ -69,7 +76,7 @@ def promedio_precios(lista_platillos):
         return 0
     total = 0
     for platillo in lista_platillos:
-        total += platillo["precio"]
+        total += platillo["price"]
     return round(math.fabs(total / len(lista_platillos)), 2)
 
 # ─── Platillo más caro y más barato ──────────────────────────
@@ -79,7 +86,7 @@ def platillo_mas_caro(lista_platillos):
         return None
     mas_caro = lista_platillos[0]
     for platillo in lista_platillos:
-        if platillo["precio"] > mas_caro["precio"]:
+        if platillo["price"] > mas_caro["price"]:
             mas_caro = platillo
     return mas_caro
 
@@ -89,7 +96,7 @@ def platillo_mas_barato(lista_platillos):
         return None
     mas_barato = lista_platillos[0]
     for platillo in lista_platillos:
-        if platillo["precio"] < mas_barato["precio"]:
+        if platillo["price"] < mas_barato["price"]:
             mas_barato = platillo
     return mas_barato
 
@@ -98,7 +105,7 @@ def sugerir_platillo_del_dia(lista_platillos):
     """Elige un platillo disponible al azar usando random."""
     disponibles = []
     for platillo in lista_platillos:
-        if platillo["disponible"]:
+        if platillo["is_available"]:
             disponibles.append(platillo)
     if not disponibles:
         return None
@@ -123,6 +130,6 @@ if __name__ == "__main__":
 
     print("Platillos agregados:", len(platillos))
     print("Promedio de precios:", promedio_precios(platillos))
-    print("Más caro:", platillo_mas_caro(platillos)["nombre"])
-    print("Más barato:", platillo_mas_barato(platillos)["nombre"])
-    print("Platillo del día:", sugerir_platillo_del_dia(platillos)["nombre"])
+    print("Más caro:", platillo_mas_caro(platillos)["name"])
+    print("Más barato:", platillo_mas_barato(platillos)["name"])
+    print("Platillo del día:", sugerir_platillo_del_dia(platillos)["name"])

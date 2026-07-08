@@ -5,3 +5,4 @@ openai
 qrcode[pil]
 pillow
 requests
+stripe

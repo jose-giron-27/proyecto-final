@@ -32,6 +32,16 @@ Platillos | AutoMenu AI
 
     </div>
 
+    {% if not plan_pro %}
+    <div class="alert alert-info border-0 shadow-sm mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            Plan Gratis: <strong>{{ cantidad_platillos }}/{{ limite_platillos }}</strong> platillos usados.
+            Las funciones de IA (descripción, traducción, caption, tags, escaneo) son exclusivas del Plan Pro.
+        </div>
+        <a href="/profile" class="btn btn-sm btn-success">⭐ Actualizar a Pro</a>
+    </div>
+    {% endif %}
+
     <div class="card shadow border-0 rounded-4">
 
         <div class="card-body">
@@ -70,10 +80,10 @@ Platillos | AutoMenu AI
 
                             <td width="90">
 
-                                {% if platillo.imagen_url %}
+                                {% if platillo.image_url %}
 
                                 <img
-                                    src="{{ platillo.imagen_url }}"
+                                    src="{{ platillo.image_url }}"
                                     class="rounded-3 shadow-sm"
                                     style="width:70px;height:70px;object-fit:cover;">
 
@@ -91,21 +101,21 @@ Platillos | AutoMenu AI
 
                             </td>
 
-                            <td>
+                            <td class="border-start">
 
                                 <h6 class="fw-bold mb-1">
 
-                                    {{ platillo.nombre }}
+                                    {{ platillo.name }}
 
                                 </h6>
 
-                                <br>
-
-                                <span class="fw-bold text-success">
-
-                                    Q {{ platillo.precio }}
-
-                                </span>
+                                <small class="text-muted d-block text-start">
+                                    {% if platillo.description %}
+                                        {{ platillo.description }}
+                                    {% else %}
+                                        <em>Sin descripción todavía</em>
+                                    {% endif %}
+                                </small>
 
                             </td>
 
@@ -113,7 +123,7 @@ Platillos | AutoMenu AI
 
                                 <strong>
 
-                                    Q {{ platillo.precio }}
+                                    Q {{ platillo.price }}
 
                                 </strong>
 
@@ -121,7 +131,7 @@ Platillos | AutoMenu AI
 
                             <td>
 
-                                {% if platillo.disponible %}
+                                {% if platillo.is_available %}
 
                                 <span class="badge bg-success">
 
@@ -143,109 +153,126 @@ Platillos | AutoMenu AI
 
                             <td>
 
-                                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                <div class="d-flex flex-column align-items-center gap-2">
 
-                                    <a
-                                        href="/dishes/edit/{{ platillo.id }}"
-                                        class="btn btn-outline-success btn-sm">
+                                    <!-- Fila 1: editar / eliminar -->
+                                    <div class="d-flex gap-2">
 
-                                        ✏️ Editar
-
-                                    </a>
-
-                                    <form
-                                        action="{{ url_for('dish_delete', dish_id=platillo.id) }}"
-                                        method="POST"
-                                        class="d-inline">
-
-                                        <button
-                                            type="submit"
-                                            class="btn btn-outline-danger btn-sm">
-
-                                            🗑️ Eliminar
-
-                                        </button>
-
-                                    </form>
-
-                                    <form
-                                        action="{{ url_for('ai_description', dish_id=platillo.id) }}"
-                                        method="POST"
-                                        class="d-inline">
-
-                                        <button
-                                            type="submit"
+                                        <a
+                                            href="/dishes/edit/{{ platillo.id }}"
                                             class="btn btn-outline-success btn-sm">
 
-                                            🤖 IA
+                                            ✏️ Editar
 
-                                        </button>
+                                        </a>
 
-                                    </form>
+                                        <form
+                                            action="{{ url_for('dish_delete', dish_id=platillo.id) }}"
+                                            method="POST"
+                                            class="d-inline">
 
-                                    <form
-                                        action="{{ url_for('ai_caption', dish_id=platillo.id) }}"
-                                        method="POST"
-                                        class="d-inline">
+                                            <button
+                                                type="submit"
+                                                class="btn btn-outline-danger btn-sm">
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-outline-secondary btn-sm">
+                                                🗑️ Eliminar
 
-                                            ✍️ Caption
+                                            </button>
 
-                                        </button>
+                                        </form>
 
-                                    </form>
+                                    </div>
 
-                                    <form
-                                        action="{{ url_for('ai_translate', dish_id=platillo.id) }}"
-                                        method="POST"
-                                        class="d-inline">
+                                    <!-- Fila 2: funciones de IA -->
+                                    <div class="d-flex flex-wrap justify-content-center gap-2 border-top pt-2 w-100">
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-outline-info btn-sm">
+                                        <form
+                                            action="{{ url_for('ai_description', dish_id=platillo.id) }}"
+                                            method="POST"
+                                            class="d-inline">
 
-                                            🌎 Traducir
+                                            <input type="hidden" name="next" value="list">
 
-                                        </button>
+                                            <button
+                                                type="submit"
+                                                class="btn btn-outline-success btn-sm">
 
-                                    </form>
+                                                🤖 IA
 
-                                    <form
-                                        action="{{ url_for('dish_toggle', dish_id=platillo.id) }}"
-                                        method="POST"
-                                        class="d-inline">
+                                            </button>
 
-                                        <input
-                                            type="hidden"
-                                            name="is_available"
-                                            value="{{ 'true' if platillo.disponible else 'false' }}">
+                                        </form>
 
-                                        {% if platillo.disponible %}
+                                        <form
+                                            action="{{ url_for('ai_caption', dish_id=platillo.id) }}"
+                                            method="POST"
+                                            class="d-inline">
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-outline-dark btn-sm">
+                                            <button
+                                                type="submit"
+                                                class="btn btn-outline-secondary btn-sm">
 
-                                            Desactivar
+                                                ✍️ Caption
 
-                                        </button>
+                                            </button>
 
-                                        {% else %}
+                                        </form>
 
-                                        <button
-                                            type="submit"
-                                            class="btn btn-outline-success btn-sm">
+                                        <form
+                                            action="{{ url_for('ai_translate', dish_id=platillo.id) }}"
+                                            method="POST"
+                                            class="d-inline">
 
-                                            Activar
+                                            <button
+                                                type="submit"
+                                                class="btn btn-outline-info btn-sm">
 
-                                        </button>
+                                                🌎 Traducir
 
-                                        {% endif %}
+                                            </button>
 
-                                    </form>
+                                        </form>
+
+                                    </div>
+
+                                    <!-- Fila 3: activar/desactivar -->
+                                    <div class="border-top pt-2 w-100 d-flex justify-content-center">
+
+                                        <form
+                                            action="{{ url_for('dish_toggle', dish_id=platillo.id) }}"
+                                            method="POST"
+                                            class="d-inline">
+
+                                            <input
+                                                type="hidden"
+                                                name="is_available"
+                                                value="{{ 'true' if platillo.is_available else 'false' }}">
+
+                                            {% if platillo.is_available %}
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-outline-dark btn-sm">
+
+                                                Desactivar
+
+                                            </button>
+
+                                            {% else %}
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-outline-success btn-sm">
+
+                                                Activar
+
+                                            </button>
+
+                                            {% endif %}
+
+                                        </form>
+
+                                    </div>
 
                                 </div>
 

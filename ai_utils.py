@@ -27,7 +27,7 @@ Nombre: {nombre}
 Ingredientes: {ingredientes}
 Precio: Q{precio}
 Tono: {tono}
-La descripcion debe ser breve (2-3 oraciones), clara y vendedora. Solo devuelve la descripcion, sin titulos ni explicaciones."""
+La descripcion debe ser breve (2-3 oraciones), clara y vendedora. Responde siempre en español, sin importar el idioma del nombre o los ingredientes. Solo devuelve la descripcion, sin titulos ni explicaciones."""
 
             respuesta = cliente.chat.completions.create(
                 model="gpt-4o-mini",
@@ -75,7 +75,7 @@ def generar_caption(nombre, descripcion, precio, red="instagram", max_intentos=3
 Nombre: {nombre}
 Descripcion: {descripcion}
 Precio: Q{precio}
-Debe incluir emojis, ser llamativo y tener hashtags relevantes. Solo devuelve el caption."""
+Debe incluir emojis, ser llamativo y tener hashtags relevantes. Responde siempre en español. Solo devuelve el caption."""
 
             respuesta = cliente.chat.completions.create(
                 model="gpt-4o-mini",
@@ -96,10 +96,10 @@ def sugerir_combo(lista_platillos, max_intentos=3):
     intentos = 0
     while intentos < max_intentos:
         try:
-            nombres = [p["nombre"] for p in lista_platillos]
+            nombres = [p["name"] for p in lista_platillos]
             prompt = f"""Tengo estos platillos en mi restaurante: {", ".join(nombres)}.
 Sugiere el mejor combo posible combinando 2 o 3 de ellos.
-Devuelve: nombre del combo, platillos incluidos y una descripcion corta de venta."""
+Responde siempre en español. Devuelve: nombre del combo, platillos incluidos y una descripcion corta de venta."""
 
             respuesta = cliente.chat.completions.create(
                 model="gpt-4o-mini",
@@ -146,7 +146,7 @@ def mejorar_nombre(nombre_original, max_intentos=3):
     while intentos < max_intentos:
         try:
             prompt = f"""Sugiere 4 nombres mas atractivos y creativos para este platillo: {nombre_original}.
-Solo devuelve los 4 nombres, uno por linea, sin numeracion ni explicaciones."""
+Responde siempre en español. Solo devuelve los 4 nombres, uno por linea, sin numeracion ni explicaciones."""
 
             respuesta = cliente.chat.completions.create(
                 model="gpt-4o-mini",

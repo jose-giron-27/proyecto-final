@@ -30,17 +30,6 @@ Editar platillo | AutoMenu AI
 
                     </p>
 
-                    <div class="d-grid mb-4">
-
-                        <button
-                            class="btn btn-success btn-lg">
-
-                            🤖 Regenerar descripción con IA
-
-                        </button>
-
-                    </div>
-
                     <form method="POST">
 
                         <div class="mb-3">
@@ -87,11 +76,17 @@ Editar platillo | AutoMenu AI
 
                                 </label>
 
-                                <input
-                                    type="text"
+                                <select
                                     name="categoria"
-                                    class="form-control"
-                                    value="{{ platillo.category }}">
+                                    class="form-control">
+                                    <option value="entradas" {% if platillo.category == "entradas" %}selected{% endif %}>Entradas</option>
+                                    <option value="platos fuertes" {% if platillo.category == "platos fuertes" %}selected{% endif %}>Platos fuertes</option>
+                                    <option value="hamburguesas" {% if platillo.category == "hamburguesas" %}selected{% endif %}>Hamburguesas</option>
+                                    <option value="tacos" {% if platillo.category == "tacos" %}selected{% endif %}>Tacos</option>
+                                    <option value="bebidas" {% if platillo.category == "bebidas" %}selected{% endif %}>Bebidas</option>
+                                    <option value="postres" {% if platillo.category == "postres" %}selected{% endif %}>Postres</option>
+                                    <option value="combos" {% if platillo.category == "combos" %}selected{% endif %}>Combos</option>
+                                </select>
 
                             </div>
 
@@ -108,7 +103,7 @@ Editar platillo | AutoMenu AI
                                 name="ingredientes"
                                 class="form-control"
                                 rows="3"
-                                placeholder="Ejemplo: Carne, queso cheddar, lechuga..."></textarea>
+                                placeholder="Ejemplo: Carne, queso cheddar, lechuga...">{{ platillo.ingredients }}</textarea>
 
                         </div>
 
@@ -124,22 +119,37 @@ Editar platillo | AutoMenu AI
                                 type="text"
                                 name="etiquetas"
                                 class="form-control"
+                                value="{{ platillo.tags|join(', ') if platillo.tags else '' }}"
                                 placeholder="Picante, Vegetariano, Sin gluten">
 
                         </div>
 
                         <div class="mb-3">
 
-                            <label class="form-label">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label mb-0">
+                                    Descripción
+                                </label>
 
-                                Descripción
+                                <button
+                                    type="submit"
+                                    formaction="{{ url_for('ai_description', dish_id=platillo.id) }}"
+                                    class="btn btn-sm btn-outline-success">
+                                    🤖 Generar/regenerar con IA
+                                </button>
+                            </div>
 
-                            </label>
+                            <input type="hidden" name="next" value="edit">
 
                             <textarea
                                 name="descripcion"
                                 rows="5"
-                                class="form-control">{{ platillo.description }}</textarea>
+                                class="form-control"
+                                placeholder="Describe el platillo o generala con el botón de arriba (podés editarla después).">{{ platillo.description }}</textarea>
+
+                            <small class="text-muted">
+                                El botón de IA guarda directo esta descripción; podés editarla después y guardar los cambios.
+                            </small>
 
                         </div>
 

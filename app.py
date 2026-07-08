@@ -33,6 +33,10 @@ from db import (
     get_restaurant_by_slug,
     get_dishes
 )
+
+# Fase 12 - Stripe (demo/simulación de pagos, modo test/sandbox)
+from stripe_utils import crear_checkout_session, verificar_pago
+
 # Cargar variables de entorno desde .env
 load_dotenv()
 
@@ -66,6 +70,22 @@ def login_required(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+# ─── Fase 12: Verificación de Plan (Free vs Pro) ──────────────────
+def es_plan_pro(restaurant_id):
+    """
+    Verifica si un restaurante tiene el Plan Pro activo.
+    Se usa para bloquear funciones de IA y el límite de platillos
+    en el Plan Gratis.
+    """
+    resultado = db_get("restaurants", filtros={"id": restaurant_id})
+    if resultado["ok"] and resultado["data"]:
+        return resultado["data"][0].get("plan") == "pro"
+    return False
+
+
+LIMITE_PLATILLOS_PLAN_GRATIS = 10
 
 # ─── Rutas base ───────────────────────────────────────────────
 @app.route("/register", methods=["GET", "POST"])
@@ -332,7 +352,7 @@ def ai_description(dish_id):
     2. Obtiene el tono elegido por el usuario (casual, elegante, juvenil, premium)
     3. Llama a generar_descripcion() en ai_utils.py (tiene while loop de reintentos)
     4. Guarda la generacion en la tabla ai_generations para historial
-    5. Actualiza el campo ai_description del platillo en Supabase
+    5. Guarda el resultado en el campo description del platillo en Supabase
     6. Redirige de vuelta a la lista de platillos
     """
     # Paso 1: Buscar el platillo en Supabase usando su ID
@@ -344,7 +364,12 @@ def ai_description(dish_id):
 
     # Guardamos los datos del platillo en una variable
     platillo = resultado["data"]
-    
+
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(platillo["restaurant_id"]):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Paso 2: Obtener el tono que eligio el usuario en el formulario
     # Si no eligio ninguno, usamos "casual" por defecto
     tono = request.form.get("tono", "casual")
@@ -371,10 +396,14 @@ def ai_description(dish_id):
         "response": resultado_ia["descripcion"]
     })
 
-    # Paso 5: Actualizar el campo ai_description del platillo en Supabase
-    update_dish(dish_id, {"ai_description": resultado_ia["descripcion"]})
+    # Paso 5: Guardar la descripcion generada directo en el campo "description",
+    # que es el mismo campo editable que ve el usuario, para que pueda seguir
+    # modificandolo antes de guardar (en vez de un campo aparte de solo lectura)
+    update_dish(dish_id, {"description": resultado_ia["descripcion"]})
 
-    # Paso 6: Redirigir de vuelta a la lista de platillos
+    # Paso 6: Redirigir de vuelta a donde vino el click (lista o pantalla de editar)
+    if request.form.get("next") == "edit":
+        return redirect(url_for("dish_edit", dish_id=dish_id))
     return redirect(url_for("dish_list"))
 
 
@@ -398,11 +427,16 @@ def ai_translate(dish_id):
 
     platillo = resultado["data"]
 
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(platillo["restaurant_id"]):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Paso 2: Obtener el idioma elegido, por defecto ingles
     idioma = request.form.get("idioma", "ingles")
 
     # Usamos la descripcion generada por IA si existe, si no la descripcion normal
-    descripcion = platillo.get("ai_description") or platillo.get("description", "")
+    descripcion = platillo.get("description", "")
 
     # Si el platillo no tiene descripcion, no hay nada que traducir
     if not descripcion:
@@ -450,11 +484,16 @@ def ai_caption(dish_id):
 
     platillo = resultado["data"]
 
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(platillo["restaurant_id"]):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Paso 2: Obtener la red social elegida, por defecto instagram
     red = request.form.get("red", "instagram")
 
     # Usamos la descripcion generada por IA si existe, si no la normal
-    descripcion = platillo.get("ai_description") or platillo.get("description", "")
+    descripcion = platillo.get("description", "")
 
     # Paso 3: Llamar a la funcion de caption con while loop de reintentos
     resultado_ia = generar_caption(
@@ -501,6 +540,11 @@ def ai_combo():
         return manejar_error("Restaurante no encontrado", contexto="Sugerir combo")
 
     restaurant_id = restaurante["data"][0]["id"]
+
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(restaurant_id):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
 
     # Paso 2: Obtener todos los platillos disponibles del restaurante
     # Usamos un for loop para filtrar solo los disponibles
@@ -558,6 +602,11 @@ def ai_tags(dish_id):
 
     platillo = resultado["data"]
 
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(platillo["restaurant_id"]):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Paso 2: Extraer los ingredientes del platillo
     ingredientes = platillo.get("ingredients", "")
     
@@ -608,6 +657,11 @@ def ai_name(dish_id):
 
     platillo = resultado["data"]
 
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(platillo["restaurant_id"]):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Paso 2: Obtener el nombre original del platillo
     nombre_original = platillo.get("name", "")
 
@@ -648,6 +702,16 @@ def ai_scan():
     4. Devuelve los platillos detectados a la pantalla de revision
     5. El usuario revisa y confirma cuales guardar en scan_review.html
     """
+    # Fase 12: el escaneo de menú con IA es exclusivo del Plan Pro
+    user_id = session.get("user")
+    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    if not restaurante["ok"] or not restaurante["data"]:
+        return redirect(url_for("profile"))
+    restaurant_id = restaurante["data"][0]["id"]
+    if not es_plan_pro(restaurant_id):
+        flash("El escaneo de menús con IA es exclusivo del Plan Pro. Actualizá tu plan para usarlo.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Si es GET, simplemente mostrar el formulario de escaneo
     if request.method == "GET":
         return render_template("dishes/scan.html")
@@ -757,7 +821,18 @@ def dish_list():
     mas_caro = platillo_mas_caro(platillos)
     mas_barato = platillo_mas_barato(platillos)
     platillo_dia = sugerir_platillo_del_dia(platillos)
-    return render_template("dishes/list.html", platillos=platillos, categoria=categoria, promedio=promedio, mas_caro=mas_caro, mas_barato=mas_barato, platillo_dia=platillo_dia)
+
+    # Fase 12: pasamos info del plan para mostrar el aviso de límite/IA en la UI
+    plan_pro = es_plan_pro(restaurant_id)
+
+    return render_template(
+        "dishes/list.html",
+        platillos=platillos, categoria=categoria, promedio=promedio,
+        mas_caro=mas_caro, mas_barato=mas_barato, platillo_dia=platillo_dia,
+        plan_pro=plan_pro,
+        limite_platillos=LIMITE_PLATILLOS_PLAN_GRATIS,
+        cantidad_platillos=len(platillos)
+    )
 
 @app.route("/dishes/create", methods=["GET", "POST"])
 @login_required
@@ -767,6 +842,19 @@ def dish_create():
     if not restaurante["ok"] or not restaurante["data"]:
         return redirect(url_for("profile"))
     restaurant_id = restaurante["data"][0]["id"]
+
+    # Fase 12: el Plan Gratis solo permite hasta 10 platillos
+    if not es_plan_pro(restaurant_id):
+        platillos_existentes = get_dishes(restaurant_id)
+        cantidad_actual = len(platillos_existentes["data"]) if platillos_existentes["ok"] else 0
+        if cantidad_actual >= LIMITE_PLATILLOS_PLAN_GRATIS:
+            flash(
+                f"Alcanzaste el límite de {LIMITE_PLATILLOS_PLAN_GRATIS} platillos del Plan Gratis. "
+                "Actualizá a Pro para agregar platillos ilimitados.",
+                "warning"
+            )
+            return redirect(url_for("dish_list"))
+
     if request.method == "POST":
         nombre = request.form.get("nombre", "")
         try:
@@ -777,7 +865,8 @@ def dish_create():
         ingredientes = request.form.get("ingredientes", "")
         imagen_url = request.form.get("imagen_url", "")
         etiquetas = request.form.getlist("etiquetas")
-        validacion = agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url, etiquetas)
+        descripcion = request.form.get("descripcion", "")
+        validacion = agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url, etiquetas, descripcion)
         if not validacion["ok"]:
             return manejar_error(validacion["error"], contexto="Crear platillo")
         datos = validacion["platillo"]
@@ -801,12 +890,14 @@ def dish_edit(dish_id):
 
     if request.method == "POST":
         campos = {
-            "nombre": request.form.get("nombre", ""),
-            "precio": float(request.form.get("precio", 0)),
-            "categoria": request.form.get("categoria", ""),
-            "ingredientes": request.form.get("ingredientes", ""),
-            "imagen_url": request.form.get("imagen_url", ""),
-            "etiquetas": request.form.getlist("etiquetas"),
+            "name": request.form.get("nombre", ""),
+            "price": float(request.form.get("precio", 0)),
+            "category": request.form.get("categoria", ""),
+            "ingredients": request.form.get("ingredientes", ""),
+            "image_url": request.form.get("imagen_url", ""),
+            "tags": request.form.getlist("etiquetas"),
+            "description": request.form.get("descripcion", ""),
+            "is_available": request.form.get("disponible") == "on",
         }
         platillo_actualizado = editar_platillo(platillo, campos)
         if not platillo_actualizado["ok"]:
@@ -851,6 +942,83 @@ def dish_toggle(dish_id):
     
     # Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
+
+# ─── Fase 12: Stripe (demo/simulación de suscripción al Plan Pro) ──────────
+# IMPORTANTE: todo esto corre en modo TEST de Stripe. No se procesan pagos
+# reales bajo ninguna circunstancia; es únicamente para la demostración.
+
+@app.route("/subscribe", methods=["POST"])
+@login_required
+def subscribe():
+    """
+    Inicia el proceso de suscripción al Plan Pro.
+    Crea una sesión de Stripe Checkout y redirige al usuario a la página
+    de pago hosteada por Stripe (no construimos ningún formulario propio).
+    """
+    user_id = session.get("user")
+    restaurante = obtener_restaurante(user_id)
+
+    if not restaurante["ok"] or not restaurante["data"]:
+        flash("Primero completá el perfil de tu restaurante.", "warning")
+        return redirect(url_for("profile"))
+
+    restaurant_id = restaurante["data"][0]["id"]
+
+    # Stripe necesita el {CHECKOUT_SESSION_ID} literal en la URL: lo agrega
+    # automáticamente al redirigir de vuelta a nuestro sitio.
+    success_url = url_for("subscription_success", _external=True) + "?session_id={CHECKOUT_SESSION_ID}"
+    cancel_url = url_for("subscription_cancel", _external=True)
+
+    resultado = crear_checkout_session(
+        restaurant_id=restaurant_id,
+        success_url=success_url,
+        cancel_url=cancel_url,
+        email=session.get("email"),
+    )
+
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Crear sesión de pago")
+
+    # Redirige al usuario a la página de Stripe Checkout (fuera de nuestro sitio)
+    return redirect(resultado["url"])
+
+
+@app.route("/subscription/success")
+@login_required
+def subscription_success():
+    """
+    Stripe redirige acá después de un pago exitoso.
+    NUNCA confiamos únicamente en el redirect: verificamos directamente
+    con la API de Stripe que el pago sí se completó antes de activar el
+    Plan Pro en la base de datos.
+    """
+    session_id = request.args.get("session_id")
+
+    if not session_id:
+        flash("No se recibió información de la sesión de pago.", "danger")
+        return redirect(url_for("profile"))
+
+    resultado = verificar_pago(session_id)
+
+    if not resultado["ok"]:
+        return manejar_error(resultado["error"], contexto="Verificar pago")
+
+    if resultado["pagado"] and resultado["restaurant_id"]:
+        actualizar_restaurante(resultado["restaurant_id"], {"plan": "pro"})
+        flash("¡Listo! Tu restaurante ahora tiene el Plan Pro. 🎉", "success")
+    else:
+        flash("El pago no se pudo confirmar. Intentá de nuevo.", "warning")
+
+    return redirect(url_for("profile"))
+
+
+@app.route("/subscription/cancel")
+@login_required
+def subscription_cancel():
+    """El usuario canceló el checkout desde Stripe antes de pagar."""
+    flash("Cancelaste el proceso de pago. Podés intentarlo de nuevo cuando quieras.", "info")
+    return redirect(url_for("profile"))
+
 
 @app.errorhandler(404)
 def pagina_no_encontrada(error):
