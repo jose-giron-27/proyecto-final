@@ -248,6 +248,8 @@ AutoMenu AI
 
 </section>
 
+{% if not session.user %}
+
 <!-- FUNCIONALIDADES -->
 
 <section id="features" class="py-5">
@@ -559,5 +561,7 @@ AutoMenu AI
     </div>
 
 </section>
+
+{% endif %}
 
 {% endblock %}

@@ -123,7 +123,7 @@ def login():
 
             flash("Bienvenido.", "success")
 
-            return redirect(url_for("index"))
+            return redirect(url_for("dashboard"))
 
         flash(resultado["error"], "danger")
 
@@ -210,7 +210,8 @@ def dashboard():
         restaurante = obtener_restaurante(session["user"])
 
         if not restaurante["ok"] or not restaurante["data"]:
-            raise Exception("No se encontró el restaurante.")
+            flash("Completá el perfil de tu restaurante para empezar.", "info")
+            return redirect(url_for("profile"))
 
         restaurante = restaurante["data"][0]
 
@@ -459,63 +460,6 @@ def ai_description(dish_id):
     # Paso 6: Redirigir de vuelta a donde vino el click (lista o pantalla de editar)
     if request.form.get("next") == "edit":
         return redirect(url_for("dish_edit", dish_id=dish_id))
-    return redirect(url_for("dish_list"))
-
-
-@app.route("/ai/translate/<dish_id>", methods=["POST"])
-@login_required
-def ai_translate(dish_id):
-    """
-    Traduce la descripcion de un platillo al idioma indicado.
-    
-    Flujo:
-    1. Busca el platillo en Supabase por su ID
-    2. Obtiene el idioma elegido por el usuario (por defecto ingles)
-    3. Llama a traducir_descripcion() en ai_utils.py
-    4. Guarda la traduccion en ai_generations para historial
-    5. Redirige de vuelta a la lista de platillos
-    """
-    # Paso 1: Buscar el platillo en Supabase
-    resultado = get_dish_by_id(dish_id)
-    if not resultado["ok"]:
-        return manejar_error(resultado["error"], contexto="Obtener platillo para traduccion")
-
-    platillo = resultado["data"]
-
-    # Fase 12: las funciones de IA son exclusivas del Plan Pro
-    if not es_plan_pro(platillo["restaurant_id"]):
-        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
-        return redirect(url_for("dish_list"))
-
-    # Paso 2: Obtener el idioma elegido, por defecto ingles
-    idioma = request.form.get("idioma", "ingles")
-
-    # Usamos la descripcion generada por IA si existe, si no la descripcion normal
-    descripcion = platillo.get("description", "")
-
-    # Si el platillo no tiene descripcion, no hay nada que traducir
-    if not descripcion:
-        return manejar_error("El platillo no tiene descripcion para traducir", contexto="Traduccion IA")
-
-    # Paso 3: Llamar a la funcion de traduccion con while loop de reintentos
-    resultado_ia = traducir_descripcion(descripcion=descripcion, idioma=idioma)
-
-    if not resultado_ia["ok"]:
-        return manejar_error(resultado_ia["error"], contexto="Traducir descripcion con IA")
-
-    # Paso 4: Guardar la traduccion en ai_generations para historial
-    from db import db_insert
-    db_insert("ai_generations", {
-        "dish_id": dish_id,
-        "type": "translation",
-        "prompt": f"idioma={idioma}",
-        "response": resultado_ia["traduccion"]
-    })
-
-    # Paso 5: Actualizar la descripcion del platillo con la traduccion
-    update_dish(dish_id, {"description": resultado_ia["traduccion"]})
-
-    # Paso 6: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
 
