@@ -4,6 +4,7 @@
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os
+import uuid
 
 load_dotenv()
 
@@ -202,6 +203,56 @@ def get_restaurant_by_slug(slug):
     Obtiene un restaurante usando su slug público.
     """
     return db_get("restaurants", filtros={"slug": slug})
+
+# ─── Subida de imágenes (platillos y restaurantes) ────────────
+BUCKET_IMAGENES_PLATILLOS = "dish-images"
+BUCKET_IMAGENES_RESTAURANTES = "restaurant-images"
+
+def _subir_imagen(archivo, bucket):
+    """
+    Sube una imagen a un bucket de Supabase Storage y devuelve su URL
+    pública. Función genérica usada por subir_imagen_platillo() y
+    subir_imagen_restaurante().
+
+    Parámetros:
+        archivo: objeto FileStorage de Flask (request.files["..."])
+        bucket: nombre del bucket de Supabase Storage donde guardarla
+
+    Retorna:
+        dict: {"ok": True, "url": "..."} o {"ok": False, "error": "..."}
+    """
+    try:
+        db = get_db()
+
+        # Generamos un nombre único para no pisar archivos de otros
+        extension = "jpg"
+        if archivo.filename and "." in archivo.filename:
+            extension = archivo.filename.rsplit(".", 1)[-1].lower()
+        nombre_archivo = f"{uuid.uuid4()}.{extension}"
+
+        contenido = archivo.read()
+
+        db.storage.from_(bucket).upload(
+            nombre_archivo,
+            contenido,
+            file_options={"content-type": archivo.mimetype or "image/jpeg"}
+        )
+
+        url_publica = db.storage.from_(bucket).get_public_url(nombre_archivo)
+
+        return {"ok": True, "url": url_publica}
+
+    except Exception as e:
+        print(f"[db] Error en _subir_imagen ({bucket}): {e}")
+        return {"ok": False, "error": str(e)}
+
+def subir_imagen_platillo(archivo):
+    """Sube la foto de un platillo al bucket de imágenes de platillos."""
+    return _subir_imagen(archivo, BUCKET_IMAGENES_PLATILLOS)
+
+def subir_imagen_restaurante(archivo):
+    """Sube el logo o la portada de un restaurante a su propio bucket."""
+    return _subir_imagen(archivo, BUCKET_IMAGENES_RESTAURANTES)
 
 if __name__ == "__main__":
     print("Probando conexión con Supabase...")

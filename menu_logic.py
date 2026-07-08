@@ -14,9 +14,8 @@ def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", eti
         return {"ok": False, "error": "El nombre no puede estar vacío"}
     if precio <= 0:
         return {"ok": False, "error": "El precio debe ser mayor a 0"}
-    categorias_validas = ["entradas", "platos fuertes", "hamburguesas", "tacos", "bebidas", "postres", "combos"]
-    if categoria.lower() not in categorias_validas:
-        return {"ok": False, "error": f"Categoría inválida. Opciones: {categorias_validas}"}
+    if not categoria or categoria.strip() == "":
+        return {"ok": False, "error": "La categoría no puede estar vacía"}
     
     if etiquetas is None:
         etiquetas = []
@@ -31,7 +30,7 @@ def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", eti
     platillo = {
         "name": nombre.strip(),            # str
         "price": float(precio),            # float
-        "category": categoria.lower(),     # str
+        "category": categoria.strip(),     # str
         "ingredients": ingredientes,       # str
         "image_url": imagen_url,           # str
         "description": descripcion,        # str
@@ -65,7 +64,7 @@ def filtrar_por_categoria(lista_platillos, categoria):
     """Recorre la lista con for y retorna solo los de esa categoría."""
     resultado = []
     for platillo in lista_platillos:
-        if platillo["category"] == categoria.lower():
+        if platillo["category"].lower() == categoria.lower():
             resultado.append(platillo)
     return resultado
 
