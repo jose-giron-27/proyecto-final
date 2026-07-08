@@ -47,13 +47,6 @@ from db import get_dishes, get_dish_by_id, insert_dish, update_dish, delete_dish
 from menu_logic import agregar_platillo, editar_platillo, eliminar_platillo, filtrar_por_categoria, promedio_precios, platillo_mas_caro, platillo_mas_barato, sugerir_platillo_del_dia
 from functools import wraps
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "user" not in session:
-            return redirect(url_for("login"))
-        return f(*args, **kwargs)
-    return decorated_function
 # ─── Decorador para proteger rutas ────────────────────────────
 def login_required(func):
     """
@@ -533,7 +526,7 @@ def ai_combo():
     """
     # Paso 1: Obtener el restaurante del usuario actual
     user_id = session.get("user")
-    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    restaurante = obtener_restaurante(user_id)
     
     if not restaurante["ok"] or not restaurante["data"]:
         return manejar_error("Restaurante no encontrado", contexto="Sugerir combo")
@@ -703,7 +696,7 @@ def ai_scan():
     """
     # Fase 12: el escaneo de menú con IA es exclusivo del Plan Pro
     user_id = session.get("user")
-    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    restaurante = obtener_restaurante(user_id)
     if not restaurante["ok"] or not restaurante["data"]:
         return redirect(url_for("profile"))
     restaurant_id = restaurante["data"][0]["id"]
@@ -759,7 +752,7 @@ def ai_scan_confirm():
     """
     # Paso 1: Obtener el restaurante del usuario
     user_id = session.get("user")
-    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    restaurante = obtener_restaurante(user_id)
 
     if not restaurante["ok"] or not restaurante["data"]:
         return redirect(url_for("profile"))
@@ -807,7 +800,7 @@ def ai_scan_confirm():
 @login_required
 def dish_list():
     user_id = session.get("user")
-    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    restaurante = obtener_restaurante(user_id)
     if not restaurante["ok"] or not restaurante["data"]:
         return redirect(url_for("index"))
     restaurant_id = restaurante["data"][0]["id"]
@@ -837,7 +830,7 @@ def dish_list():
 @login_required
 def dish_create():
     user_id = session.get("user")
-    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    restaurante = obtener_restaurante(user_id)
     if not restaurante["ok"] or not restaurante["data"]:
         return redirect(url_for("profile"))
     restaurant_id = restaurante["data"][0]["id"]
