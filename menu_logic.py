@@ -14,9 +14,8 @@ def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", eti
         return {"ok": False, "error": "El nombre no puede estar vacío"}
     if precio <= 0:
         return {"ok": False, "error": "El precio debe ser mayor a 0"}
-    categorias_validas = ["entradas", "platos fuertes", "hamburguesas", "tacos", "bebidas", "postres", "combos"]
-    if categoria.lower() not in categorias_validas:
-        return {"ok": False, "error": f"Categoría inválida. Opciones: {categorias_validas}"}
+    if not categoria or categoria.strip() == "":
+        return {"ok": False, "error": "La categoría no puede estar vacía"}
     
     if etiquetas is None:
         etiquetas = []
@@ -31,7 +30,7 @@ def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", eti
     platillo = {
         "name": nombre.strip(),            # str
         "price": float(precio),            # float
-        "category": categoria.lower(),     # str
+        "category": categoria.strip(),     # str
         "ingredients": ingredientes,       # str
         "image_url": imagen_url,           # str
         "description": descripcion,        # str
@@ -65,7 +64,7 @@ def filtrar_por_categoria(lista_platillos, categoria):
     """Recorre la lista con for y retorna solo los de esa categoría."""
     resultado = []
     for platillo in lista_platillos:
-        if platillo["category"] == categoria.lower():
+        if platillo["category"].lower() == categoria.lower():
             resultado.append(platillo)
     return resultado
 
@@ -81,24 +80,39 @@ def promedio_precios(lista_platillos):
 
 # ─── Platillo más caro y más barato ──────────────────────────
 def platillo_mas_caro(lista_platillos):
-    """Retorna el platillo con el precio más alto."""
+    """
+    Retorna el platillo con el precio más alto, usando recursión.
+    Caso base: lista de 0 o 1 platillo. Caso recursivo: comparamos el
+    primer platillo contra el más caro del resto de la lista.
+    """
     if not lista_platillos:
         return None
-    mas_caro = lista_platillos[0]
-    for platillo in lista_platillos:
-        if platillo["price"] > mas_caro["price"]:
-            mas_caro = platillo
-    return mas_caro
+    if len(lista_platillos) == 1:
+        return lista_platillos[0]
+
+    primero = lista_platillos[0]
+    mas_caro_del_resto = platillo_mas_caro(lista_platillos[1:])
+
+    if primero["price"] > mas_caro_del_resto["price"]:
+        return primero
+    return mas_caro_del_resto
 
 def platillo_mas_barato(lista_platillos):
-    """Retorna el platillo con el precio más bajo."""
+    """
+    Retorna el platillo con el precio más bajo, usando recursión.
+    Mismo enfoque que platillo_mas_caro, pero comparando hacia abajo.
+    """
     if not lista_platillos:
         return None
-    mas_barato = lista_platillos[0]
-    for platillo in lista_platillos:
-        if platillo["price"] < mas_barato["price"]:
-            mas_barato = platillo
-    return mas_barato
+    if len(lista_platillos) == 1:
+        return lista_platillos[0]
+
+    primero = lista_platillos[0]
+    mas_barato_del_resto = platillo_mas_barato(lista_platillos[1:])
+
+    if primero["price"] < mas_barato_del_resto["price"]:
+        return primero
+    return mas_barato_del_resto
 
 # ─── Platillo del día ─────────────────────────────────────────
 def sugerir_platillo_del_dia(lista_platillos):

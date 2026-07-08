@@ -43,17 +43,10 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "dev-secret-key")
 
-from db import get_dishes, get_dish_by_id, insert_dish, update_dish, delete_dish, toggle_dish_availability, db_get
+from db import get_dishes, get_dish_by_id, insert_dish, update_dish, delete_dish, toggle_dish_availability, db_get, subir_imagen_platillo, subir_imagen_restaurante
 from menu_logic import agregar_platillo, editar_platillo, eliminar_platillo, filtrar_por_categoria, promedio_precios, platillo_mas_caro, platillo_mas_barato, sugerir_platillo_del_dia
 from functools import wraps
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "user" not in session:
-            return redirect(url_for("login"))
-        return f(*args, **kwargs)
-    return decorated_function
 # ─── Decorador para proteger rutas ────────────────────────────
 def login_required(func):
     """
@@ -147,6 +140,26 @@ def profile():
 
     if request.method == "POST":
 
+        # Logo: si subieron un archivo, tiene prioridad sobre la URL
+        archivo_logo = request.files.get("logo_archivo")
+        if archivo_logo and archivo_logo.filename:
+            resultado_logo = subir_imagen_restaurante(archivo_logo)
+            if not resultado_logo["ok"]:
+                return manejar_error(resultado_logo["error"], contexto="Subir logo del restaurante")
+            logo_url = resultado_logo["url"]
+        else:
+            logo_url = request.form.get("logo", "")
+
+        # Imagen de portada: misma lógica
+        archivo_portada = request.files.get("imagen_portada_archivo")
+        if archivo_portada and archivo_portada.filename:
+            resultado_portada = subir_imagen_restaurante(archivo_portada)
+            if not resultado_portada["ok"]:
+                return manejar_error(resultado_portada["error"], contexto="Subir imagen de portada")
+            portada_url = resultado_portada["url"]
+        else:
+            portada_url = request.form.get("imagen_portada", "")
+
         datos = {
 
             "name": request.form["nombre"],
@@ -156,8 +169,8 @@ def profile():
          "whatsapp": request.form["whatsapp"],
          "instagram": request.form["instagram"],
          "opening_hours": request.form["horarios"],
-         "logo_url": request.form["logo"],
-        "cover_image_url": request.form["imagen_portada"],
+         "logo_url": logo_url,
+        "cover_image_url": portada_url,
         "user_id": session["user"]
 }
 
@@ -275,6 +288,23 @@ def qr_dashboard():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/planes")
+def planes():
+    """
+    Muestra solo la sección de precios/planes, tanto para visitantes
+    sin cuenta como para usuarios logueados (a quienes además se les
+    marca cuál es su plan actual).
+    """
+    plan_actual = None
+
+    if session.get("user"):
+        restaurante = obtener_restaurante(session["user"])
+        if restaurante["ok"] and restaurante["data"]:
+            plan_actual = restaurante["data"][0].get("plan", "free")
+
+    return render_template("planes.html", plan_actual=plan_actual)
 
 # Fase 12+: textos fijos de la interfaz del menú público, traducidos.
 # Solo son 3 etiquetas + 7 categorías conocidas, así que usamos un
@@ -533,7 +563,7 @@ def ai_combo():
     """
     # Paso 1: Obtener el restaurante del usuario actual
     user_id = session.get("user")
-    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    restaurante = obtener_restaurante(user_id)
     
     if not restaurante["ok"] or not restaurante["data"]:
         return manejar_error("Restaurante no encontrado", contexto="Sugerir combo")
@@ -703,7 +733,7 @@ def ai_scan():
     """
     # Fase 12: el escaneo de menú con IA es exclusivo del Plan Pro
     user_id = session.get("user")
-    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    restaurante = obtener_restaurante(user_id)
     if not restaurante["ok"] or not restaurante["data"]:
         return redirect(url_for("profile"))
     restaurant_id = restaurante["data"][0]["id"]
@@ -759,7 +789,7 @@ def ai_scan_confirm():
     """
     # Paso 1: Obtener el restaurante del usuario
     user_id = session.get("user")
-    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    restaurante = obtener_restaurante(user_id)
 
     if not restaurante["ok"] or not restaurante["data"]:
         return redirect(url_for("profile"))
@@ -807,7 +837,7 @@ def ai_scan_confirm():
 @login_required
 def dish_list():
     user_id = session.get("user")
-    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    restaurante = obtener_restaurante(user_id)
     if not restaurante["ok"] or not restaurante["data"]:
         return redirect(url_for("index"))
     restaurant_id = restaurante["data"][0]["id"]
@@ -837,7 +867,7 @@ def dish_list():
 @login_required
 def dish_create():
     user_id = session.get("user")
-    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    restaurante = obtener_restaurante(user_id)
     if not restaurante["ok"] or not restaurante["data"]:
         return redirect(url_for("profile"))
     restaurant_id = restaurante["data"][0]["id"]
@@ -862,9 +892,19 @@ def dish_create():
             return manejar_error("El precio debe ser un numero valido", contexto="Crear platillo")
         categoria = request.form.get("categoria", "")
         ingredientes = request.form.get("ingredientes", "")
-        imagen_url = request.form.get("imagen_url", "")
         etiquetas = request.form.getlist("etiquetas")
         descripcion = request.form.get("descripcion", "")
+
+        # Imagen: si el usuario subió un archivo, tiene prioridad sobre la URL
+        archivo_imagen = request.files.get("imagen_archivo")
+        if archivo_imagen and archivo_imagen.filename:
+            resultado_subida = subir_imagen_platillo(archivo_imagen)
+            if not resultado_subida["ok"]:
+                return manejar_error(resultado_subida["error"], contexto="Subir imagen del platillo")
+            imagen_url = resultado_subida["url"]
+        else:
+            imagen_url = request.form.get("imagen_url", "")
+
         validacion = agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url, etiquetas, descripcion)
         if not validacion["ok"]:
             return manejar_error(validacion["error"], contexto="Crear platillo")
@@ -888,12 +928,22 @@ def dish_edit(dish_id):
     platillo = resultado["data"]
 
     if request.method == "POST":
+        # Imagen: si el usuario subió un archivo, tiene prioridad sobre la URL
+        archivo_imagen = request.files.get("imagen_archivo")
+        if archivo_imagen and archivo_imagen.filename:
+            resultado_subida = subir_imagen_platillo(archivo_imagen)
+            if not resultado_subida["ok"]:
+                return manejar_error(resultado_subida["error"], contexto="Subir imagen del platillo")
+            imagen_url = resultado_subida["url"]
+        else:
+            imagen_url = request.form.get("imagen_url", "")
+
         campos = {
             "name": request.form.get("nombre", ""),
             "price": float(request.form.get("precio", 0)),
             "category": request.form.get("categoria", ""),
             "ingredients": request.form.get("ingredientes", ""),
-            "image_url": request.form.get("imagen_url", ""),
+            "image_url": imagen_url,
             "tags": request.form.getlist("etiquetas"),
             "description": request.form.get("descripcion", ""),
             "is_available": request.form.get("disponible") == "on",

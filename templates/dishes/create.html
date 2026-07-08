@@ -46,7 +46,7 @@ Nuevo platillo | AutoMenu AI
 
                 </div>
 
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data">
 
                         <div class="mb-3">
 
@@ -92,17 +92,11 @@ Nuevo platillo | AutoMenu AI
 
                                 </label>
 
-                                <select
+                                <input
+                                    type="text"
                                     name="categoria"
-                                    class="form-control form-control-lg">
-                                    <option value="entradas">Entradas</option>
-                                    <option value="platos fuertes">Platos fuertes</option>
-                                    <option value="hamburguesas">Hamburguesas</option>
-                                    <option value="tacos">Tacos</option>
-                                    <option value="bebidas">Bebidas</option>
-                                    <option value="postres">Postres</option>
-                                    <option value="combos">Combos</option>
-                                </select>
+                                    class="form-control form-control-lg"
+                                    placeholder="Ej. Postres, Vegetariano, Especialidades...">
                             </div>
 
                         </div>
@@ -159,16 +153,27 @@ Nuevo platillo | AutoMenu AI
 
                             <label class="form-label">
 
-                                Imagen (URL)
-                                
+                                Imagen del platillo
 
                             </label>
 
                             <input
                                 type="url"
                                 name="imagen_url"
-                                class="form-control form-control-lg"
-                                placeholder="https://...">
+                                class="form-control form-control-lg mb-2"
+                                placeholder="Pegá una URL de imagen: https://...">
+
+                            <div class="text-center text-muted small mb-2">— o —</div>
+
+                            <input
+                                type="file"
+                                name="imagen_archivo"
+                                accept="image/*"
+                                class="form-control">
+
+                            <small class="text-muted">
+                                Si subís un archivo, se usa esa imagen en vez de la URL.
+                            </small>
 
                         </div>
 
