@@ -94,6 +94,58 @@
 
                     </li>
 
+                    {% if session.user %}
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="/dashboard">
+
+                            Dashboard
+
+                        </a>
+
+                    </li>
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="/dishes">
+
+                            Mis platillos
+
+                        </a>
+
+                    </li>
+
+                    <li class="nav-item ms-lg-3">
+
+                        <a
+                            href="/profile"
+                            class="btn btn-outline-success">
+
+                            Mi perfil
+
+                        </a>
+
+                    </li>
+
+                    <li class="nav-item ms-lg-2">
+
+                        <a
+                            href="/logout"
+                            class="btn btn-success">
+
+                            Cerrar sesión
+
+                        </a>
+
+                    </li>
+
+                    {% else %}
+
                     <li class="nav-item ms-lg-3">
 
                         <a
@@ -117,6 +169,8 @@
                         </a>
 
                     </li>
+
+                    {% endif %}
 
                 </ul>
 

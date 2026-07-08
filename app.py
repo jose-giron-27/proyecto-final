@@ -203,7 +203,7 @@ def dashboard():
             total_platillos = len(resultado["data"])
 
             for platillo in resultado["data"]:
-                if platillo["is_available"]:
+                if platillo["disponible"]:
                     menu_activo = True
                     break
 
@@ -278,7 +278,7 @@ def public_menu(slug):
 
     if resultado["ok"]:
         for platillo in resultado["data"]:
-            if platillo["is_available"]: #solo muestran los platillos disponibles
+            if platillo["disponible"]: #solo muestran los platillos disponibles
                 platillos.append(platillo)
 
     return render_template(

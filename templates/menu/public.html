@@ -7,12 +7,12 @@
 {% block content %}
 
 
-{% if restaurante.imagen_portada %}
+{% if restaurante.cover_image_url %}
 
 <div class="mb-5">
 
     <img
-        src="{{ restaurante.imagen_portada }}"
+        src="{{ restaurante.cover_image_url }}"
         class="img-fluid w-100 rounded shadow"
         style="max-height:350px; object-fit:cover;">
 
@@ -24,9 +24,9 @@
     <!-- Restaurante -->
     <div class="text-center mb-5">
 
-        {% if restaurante.logo %}
+        {% if restaurante.logo_url %}
         <img
-            src="{{ restaurante.logo }}"
+            src="{{ restaurante.logo_url }}"
             class="rounded-circle shadow mb-3"
             style="width:150px;height:150px;object-fit:cover;">
         {% endif %}
@@ -112,78 +112,59 @@
 
                         <h4>
 
-                            {{ platillo.name }}
+                            {{ platillo.nombre }}
 
                         </h4>
 
-                        <p class="text-muted
+                        <p class="text-muted">
 
-            <div class="card shadow h-100">
+                            {% if platillo.ai_description %}
 
-                {% if platillo.imagen_url %}
-                <img
-                    src="{{ platillo.imagen_url }}"
-                    class="card-img-top"
-                    style="height:220px;object-fit:cover;">
-                {% endif %}
+                            {{ platillo.ai_description }}
 
-                <div class="card-body">
+                            {% else %}
 
-                    <h4>
+                            {{ platillo.ingredientes }}
 
-                        {{ platillo.name }}
+                            {% endif %}
 
-                    </h4>
+                        </p>
 
-                    <p class="text-muted">
+                        <p>
 
-                        {% if platillo.ai_description %}
+                            <span class="badge bg-primary me-2">
 
-                        {{ platillo.ai_description }}
+                                {{ platillo.categoria }}
 
-                        {% else %}
+                            </span>
 
-                        {{ platillo.description }}
+                        </p>
+
+                        {% if platillo.etiquetas %}
+
+                        <p>
+
+                            <strong>Etiquetas:</strong>
+
+                            {{ platillo.etiquetas|join(', ') }}
+
+                        </p>
 
                         {% endif %}
 
-                    </p>
+                        <h5 class="text-success">
 
-                    <p>
+                            Q {{ platillo.precio }}
 
-                        <span class="badge bg-primary me-2">
+                        </h5>
 
-                            {{ platillo.category }}
-
-                        </span>
-
-                    </p>
-
-                    {% if platillo.tags %}
-
-                    <p>
-
-                        <strong>Etiquetas:</strong>
-
-                        {{ platillo.tags }}
-
-                    </p>
-
-                    {% endif %}
-
-                    <h5 class="text-success">
-
-                        Q {{ platillo.price }}
-
-                    </h5>
+                    </div>
 
                 </div>
 
             </div>
 
-        </div>
-        {% endif %}
-        
+            {% endfor %}
 
     </div>
 
