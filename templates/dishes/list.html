@@ -70,10 +70,10 @@ Platillos | AutoMenu AI
 
                             <td width="90">
 
-                                {% if platillo.image_url %}
+                                {% if platillo.imagen_url %}
 
                                 <img
-                                    src="{{ platillo.image_url }}"
+                                    src="{{ platillo.imagen_url }}"
                                     class="rounded-3 shadow-sm"
                                     style="width:70px;height:70px;object-fit:cover;">
 
@@ -95,7 +95,7 @@ Platillos | AutoMenu AI
 
                                 <h6 class="fw-bold mb-1">
 
-                                    {{ platillo.name }}
+                                    {{ platillo.nombre }}
 
                                 </h6>
 
@@ -103,7 +103,7 @@ Platillos | AutoMenu AI
 
                                 <span class="fw-bold text-success">
 
-                                    Q {{ platillo.price }}
+                                    Q {{ platillo.precio }}
 
                                 </span>
 
@@ -113,7 +113,7 @@ Platillos | AutoMenu AI
 
                                 <strong>
 
-                                    Q {{ platillo.price }}
+                                    Q {{ platillo.precio }}
 
                                 </strong>
 
@@ -121,7 +121,7 @@ Platillos | AutoMenu AI
 
                             <td>
 
-                                {% if platillo.is_available %}
+                                {% if platillo.disponible %}
 
                                 <span class="badge bg-success">
 
@@ -153,53 +153,99 @@ Platillos | AutoMenu AI
 
                                     </a>
 
-                                    <button
-                                        class="btn btn-outline-danger btn-sm">
+                                    <form
+                                        action="{{ url_for('dish_delete', dish_id=platillo.id) }}"
+                                        method="POST"
+                                        class="d-inline">
 
-                                        🗑️ Eliminar
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-danger btn-sm">
 
-                                    </button>
+                                            🗑️ Eliminar
 
-                                    <button
-                                        class="btn btn-outline-success btn-sm">
+                                        </button>
 
-                                        🤖 IA
+                                    </form>
 
-                                    </button>
+                                    <form
+                                        action="{{ url_for('ai_description', dish_id=platillo.id) }}"
+                                        method="POST"
+                                        class="d-inline">
 
-                                    <button
-                                        class="btn btn-outline-secondary btn-sm">
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-success btn-sm">
 
-                                        ✍️ Caption
+                                            🤖 IA
 
-                                    </button>
+                                        </button>
 
-                                    <button
-                                        class="btn btn-outline-info btn-sm">
+                                    </form>
 
-                                        🌎 Traducir
+                                    <form
+                                        action="{{ url_for('ai_caption', dish_id=platillo.id) }}"
+                                        method="POST"
+                                        class="d-inline">
 
-                                    </button>
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-secondary btn-sm">
 
-                                    {% if platillo.is_available %}
+                                            ✍️ Caption
 
-                                    <button
-                                        class="btn btn-outline-dark btn-sm">
+                                        </button>
 
-                                        Desactivar
+                                    </form>
 
-                                    </button>
+                                    <form
+                                        action="{{ url_for('ai_translate', dish_id=platillo.id) }}"
+                                        method="POST"
+                                        class="d-inline">
 
-                                    {% else %}
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-info btn-sm">
 
-                                    <button
-                                        class="btn btn-outline-success btn-sm">
+                                            🌎 Traducir
 
-                                        Activar
+                                        </button>
 
-                                    </button>
+                                    </form>
 
-                                    {% endif %}
+                                    <form
+                                        action="{{ url_for('dish_toggle', dish_id=platillo.id) }}"
+                                        method="POST"
+                                        class="d-inline">
+
+                                        <input
+                                            type="hidden"
+                                            name="is_available"
+                                            value="{{ 'true' if platillo.disponible else 'false' }}">
+
+                                        {% if platillo.disponible %}
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-dark btn-sm">
+
+                                            Desactivar
+
+                                        </button>
+
+                                        {% else %}
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-success btn-sm">
+
+                                            Activar
+
+                                        </button>
+
+                                        {% endif %}
+
+                                    </form>
 
                                 </div>
 
