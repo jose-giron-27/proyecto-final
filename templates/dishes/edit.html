@@ -87,11 +87,17 @@ Editar platillo | AutoMenu AI
 
                                 </label>
 
-                                <input
-                                    type="text"
+                                <select
                                     name="categoria"
-                                    class="form-control"
-                                    value="{{ platillo.category }}">
+                                    class="form-control">
+                                    <option value="entradas" {% if platillo.categoria == "entradas" %}selected{% endif %}>Entradas</option>
+                                    <option value="platos fuertes" {% if platillo.categoria == "platos fuertes" %}selected{% endif %}>Platos fuertes</option>
+                                    <option value="hamburguesas" {% if platillo.categoria == "hamburguesas" %}selected{% endif %}>Hamburguesas</option>
+                                    <option value="tacos" {% if platillo.categoria == "tacos" %}selected{% endif %}>Tacos</option>
+                                    <option value="bebidas" {% if platillo.categoria == "bebidas" %}selected{% endif %}>Bebidas</option>
+                                    <option value="postres" {% if platillo.categoria == "postres" %}selected{% endif %}>Postres</option>
+                                    <option value="combos" {% if platillo.categoria == "combos" %}selected{% endif %}>Combos</option>
+                                </select>
 
                             </div>
 
