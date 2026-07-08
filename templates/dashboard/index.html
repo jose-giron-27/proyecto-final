@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard | AutoMenu AI
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <h1 class="mb-4">
+        Bienvenido, {{ restaurante.name }}
+    </h1>
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <h4>Dashboard del restaurante</h4>
+
+            <p class="text-muted">
+
+                Desde aquí podrás administrar tu menú digital.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="row mt-4">
+
+    <div class="col-md-6 mb-3">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body text-center">
+
+                <h5>Total de platillos</h5>
+
+                <h2>{{ total_platillos }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-6 mb-3">
+
+        <div class="card shadow-sm">
+
+            <div class="card-body text-center">
+
+                <h5>Estado del menú</h5>
+
+                {% if menu_activo %}
+
+                    <span class="badge bg-success">
+                        Activo
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-danger">
+                        Sin platillos disponibles
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="card shadow-sm mt-4">
+
+    <div class="card-header">
+
+        <h4>Accesos rápidos</h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="d-flex flex-wrap gap-3">
+
+            <a href="/profile" class="btn btn-primary">
+                Editar perfil
+            </a>
+
+            <a href="/dishes" class="btn btn-success">
+                Administrar platillos
+            </a>
+
+            <a href="/dashboard/qr" class="btn btn-warning">
+                Ver código QR
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="card shadow-sm mt-4">
+
+    <div class="card-header">
+        <h4>Menú público</h4>
+    </div>
+
+    <div class="card-body text-center">
+
+        <img
+            src="{{ url_for('generate_qr', slug=restaurante.slug) }}"
+            class="img-fluid mb-3"
+            style="max-width:220px;">
+
+        <p>
+
+            <strong>Enlace del menú:</strong>
+
+        </p>
+
+        <a
+            href="{{ menu_publico }}"
+            target="_blank">
+
+            {{ menu_publico }}
+
+        </a>
+
+    </div>
+
+</div>
+{% endblock %}

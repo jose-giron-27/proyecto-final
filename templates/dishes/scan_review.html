@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}
+Revisar escaneo | AutoMenu AI
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-10">
+
+            <div class="card shadow-lg border-0 rounded-4">
+
+                <div class="card-body p-5">
+
+                    <h1 class="fw-bold text-center mb-3">
+
+                        Revisar resultados del escaneo
+
+                    </h1>
+
+                    <p class="text-center text-muted mb-5">
+
+                        Verificá la información detectada por la Inteligencia Artificial antes de guardar los platillos.
+
+                    </p>
+
+                    <div class="alert alert-info border-0 shadow-sm">
+
+                        🤖 La Inteligencia Artificial detectó automáticamente estos platillos.
+                        Revisá la información antes de guardarla.
+
+                    </div>
+                    <div class="mb-4">
+
+                        <span class="badge bg-success">
+                            2 platillos detectados
+                        </span>
+
+                    </div>
+                    <div class="table-responsive">
+
+                        <table class="table table-hover align-middle">
+
+                            <th>Categoría</th>
+                                <th class="text-center">Acciones</th>
+
+                                <tr>
+
+                                    <th>Platillo</th>
+                                    <th>Precio</th>
+                                    <th>Categoría</th>
+
+                                </tr>
+                                      
+
+                            </thead>
+
+                            <tbody>
+
+                                <tr>
+
+                                    <td>Hamburguesa Clásica</td>
+                                    <td>Q55.00</td>
+                                    <td>Comida rápida</td>
+
+                                    <td class="text-center">
+
+                                        <button class="btn btn-outline-primary btn-sm">
+
+                                            ✏️ Editar
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td>Pizza Margarita</td>
+                                    <td>Q80.00</td>
+                                    <td>Pizzas</td>
+
+                                    <td class="text-center">
+
+                                        <button class="btn btn-outline-primary btn-sm">
+
+                                            ✏️ Editar
+
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-5">
+
+                        <div>
+
+                            <a
+                                href="/scan"
+                                class="btn btn-outline-secondary">
+
+                                ← Escanear nuevamente
+
+                            </a>
+
+                        </div>
+
+                        <div>
+
+                            <button
+                                class="btn btn-success btn-lg">
+
+                                💾 Guardar todos los platillos
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
