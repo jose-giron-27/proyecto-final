@@ -14,47 +14,28 @@ Crear cuenta | AutoMenu AI
 
             <div class="card-body p-5">
 
-                <h2 class="text-center mb-4">
-                    Crear cuenta
-                </h2>
+                <div class="text-center mb-3">
 
-                <p class="text-center text-muted mb-4">
-                    Registrá tu restaurante y comenzá a crear menús inteligentes.
-                </p>
+                    <div class="display-3">
 
-                <form method="POST">
-
-                    <div class="row">
-
-                        <div class="col-md-6 mb-3">
-
-                            <label class="form-label">
-                                Nombre del propietario
-                            </label>
-
-                            <input
-                                type="text"
-                                name="owner_name"
-                                class="form-control"
-                                required>
-
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-
-                            <label class="form-label">
-                                Nombre del restaurante
-                            </label>
-
-                            <input
-                                type="text"
-                                name="restaurant_name"
-                                class="form-control"
-                                required>
-
-                        </div>
+                        🤖
 
                     </div>
+
+                </div>
+
+                <h2 class="fw-bold text-center mb-3">
+
+                    Crear cuenta
+
+                </h2>
+
+                <p class="text-center text-muted mb-5">
+
+                 Comenzá a crear menús digitales inteligentes para tu restaurante.
+
+                </p>
+                <form method="POST">
 
                     <div class="mb-3">
 
@@ -65,39 +46,8 @@ Crear cuenta | AutoMenu AI
                         <input
                             type="email"
                             name="email"
-                            class="form-control"
+                            class="form-control form-control-lg"
                             required>
-
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Tipo de restaurante
-                        </label>
-
-                        <select
-                            class="form-select"
-                            name="restaurant_type"
-                            required>
-
-                            <option value="">
-                                Seleccioná una opción
-                            </option>
-
-                            <option>Comida rápida</option>
-
-                            <option>Restaurante familiar</option>
-
-                            <option>Cafetería</option>
-
-                            <option>Pizzería</option>
-
-                            <option>Taquería</option>
-
-                            <option>Otro</option>
-
-                        </select>
 
                     </div>
 
@@ -110,7 +60,7 @@ Crear cuenta | AutoMenu AI
                         <input
                             type="password"
                             name="password"
-                            class="form-control"
+                            class="form-control form-control-lg"
                             required>
 
                     </div>
@@ -119,7 +69,7 @@ Crear cuenta | AutoMenu AI
 
                         <button
                             type="submit"
-                            class="btn btn-success btn-lg">
+                            class="btn btn-success btn-lg w-100">
 
                             Crear cuenta
 
@@ -135,9 +85,13 @@ Crear cuenta | AutoMenu AI
 
                     ¿Ya tenés una cuenta?
 
-                    <a href="/login">
+                    <a
+                        href="/login"
+                        class="text-decoration-none fw-semibold">
+
                         Iniciá sesión
-                    </a>
+
+                     </a>
 
                 </p>
 

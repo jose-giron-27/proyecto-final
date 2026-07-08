@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}
+Escanear menú | AutoMenu AI
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-lg border-0 rounded-4">
+
+                <div class="card-body p-5">
+
+                    <div class="text-center mb-4">
+
+                        <div class="display-2">
+
+                            📸
+
+                        </div>
+
+                        <h2 class="fw-bold mt-3">
+
+                            Escanear menú
+
+                        </h2>
+
+                        <p class="text-muted">
+
+                            Subí una fotografía de tu menú y la IA detectará automáticamente los platillos para ayudarte a crear tu menú digital.
+
+                        </p>
+
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data">
+
+                        <div class="mb-4">
+
+                            <label class="form-label">
+
+                                Imagen del menú
+
+                            </label>
+
+                            <input
+                                type="file"
+                                class="form-control form-control-lg"
+                                accept="image/*">
+
+                        </div>
+
+                        <div class="alert alert-light border">
+
+                            <strong>
+
+                                Recomendaciones:
+
+                            </strong>
+
+                            <ul class="mb-0 mt-2">
+
+                                <li>La imagen debe verse completa.</li>
+
+                                <li>Evitá sombras o reflejos.</li>
+
+                                <li>Usá buena iluminación.</li>
+
+                                <li>Preferiblemente una fotografía frontal.</li>
+
+                            </ul>
+
+                        </div>
+
+                        <div class="d-grid mt-4">
+
+                            <button
+                                class="btn btn-success btn-lg">
+
+                                🤖 Analizar con IA
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

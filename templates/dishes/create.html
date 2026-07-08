@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}
+Nuevo platillo | AutoMenu AI
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-lg border-0 rounded-4">
+
+                <div class="card-body p-5">
+
+                    <h1 class="fw-bold text-center mb-3">
+                        Crear nuevo platillo
+                    </h1>
+
+                    <p class="text-center text-muted mb-5">
+
+                        Completá la información del platillo o utilizá la Inteligencia Artificial para generar una descripción profesional.
+
+                    </p>
+
+                    <div class="alert alert-success border-0 shadow-sm mb-4">
+
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                🤖 Asistente IA
+                            </h5>
+
+                            <small>
+                                Generá automáticamente una descripción atractiva para este platillo.
+                            </small>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn btn-success btn-lg">
+
+                            Generar descripción con IA
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                    <form method="POST">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Nombre del platillo
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="nombre"
+                                class="form-control form-control-lg"
+                                required
+                                placeholder="Ej. Pizza Margarita">
+
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Precio
+
+                                </label>
+
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="precio"
+                                    class="form-control form-control-lg">
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+
+                                    Categoría
+                                    
+
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="categoria"
+                                    class="form-control form-control-lg"
+                                    placeholder="Ej. Bebidas, Postres, Entradas...">
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Ingredientes
+
+                            </label>
+
+                            <textarea
+                                name="ingredientes"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Ejemplo: Carne, queso cheddar, lechuga..."></textarea>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Etiquetas
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="etiquetas"
+                                class="form-control"
+                                placeholder="Picante, Vegetariano, Sin gluten">
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Descripción
+
+                            </label>
+
+                            <textarea
+                                name="descripcion"
+                                rows="5"
+                                class="form-control"
+                                placeholder="Describe el platillo o utiliza la IA para generarla automáticamente."></textarea>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+
+                                Imagen (URL)
+                                
+
+                            </label>
+
+                            <input
+                                type="url"
+                                name="imagen_url"
+                                class="form-control form-control-lg"
+                                placeholder="https://...">
+
+                        </div>
+
+                        <div class="form-check mb-4">
+
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                name="disponible"
+                                id="disponible"
+                                checked>
+
+                            <label class="form-check-label" for="disponible">
+
+                                Platillo disponible
+                                
+                            </label>
+                                <p class="text-muted small mt-2">
+
+                                    Si desactivás este platillo, no aparecerá en el menú público.
+
+                                </p>
+
+                        </div>
+
+                            <div class="d-grid gap-3">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-success btn-lg shadow-sm">
+
+                                    Guardar platillo
+
+                                </button>
+
+                                <a
+                                    href="/dishes"
+                                    class="btn btn-outline-secondary">
+
+                                    Cancelar
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -16,23 +16,31 @@ Perfil del Restaurante | AutoMenu AI
 
                 <div class="card-body p-5">
 
-                    <h2 class="text-center mb-4">
-                        Perfil del Restaurante
+                    <h2 class="fw-bold mb-3">
+                        Perfil del restaurante
                     </h2>
 
-                    <p class="text-center text-muted mb-4">
-                        Completá la información que verán tus clientes.
+                    <p class="text-muted mb-5">
+                        Configurá la información que aparecerá en tu menú digital.
                     </p>
 
                     <form method="POST">
+                        <div class="card shadow-lg border-0 rounded-4">
 
+                            <div class="card-body p-5">
+
+                                <!-- aquí va TODO el formulario -->
+
+                            </div>
+
+                         </div>
                         <div class="mb-3">
                             <label class="form-label">Nombre del restaurante</label>
                             <input
                                  type="text"
                                  name="nombre"
                                  class="form-control"
-                                 value="{{ restaurante.name if restaurante else '' }}">
+                                 value="{{ restaurante.nombre if restaurante else '' }}">
                         </div>
 
                         <div class="mb-3">
@@ -40,7 +48,7 @@ Perfil del Restaurante | AutoMenu AI
                             <input
                              type="url"
                              name="logo"
-                             class="form-control"
+                             class="form-control form-control-lg"
                             value="{{ restaurante.logo if restaurante else '' }}">
                         
                         </div>
@@ -50,7 +58,7 @@ Perfil del Restaurante | AutoMenu AI
                             <textarea
                              name="descripcion"
                              class="form-control"
-                             rows="3">{{ restaurante.description if restaurante else '' }}</textarea>
+                             rows="3">{{ restaurante.descripcion if restaurante else '' }}</textarea>
                         </div>
 
                         <div class="mb-3">
@@ -59,7 +67,7 @@ Perfil del Restaurante | AutoMenu AI
                              type="text"
                              name="direccion"
                              class="form-control"
-                            value="{{ restaurante.address if restaurante else '' }}">
+                            value="{{ restaurante.direccion if restaurante else '' }}">
                                 
                         </div>
 
@@ -69,7 +77,7 @@ Perfil del Restaurante | AutoMenu AI
                              type="text"
                              name="horarios"
                              class="form-control"
-                             value="{{ restaurante.opening_hours if restaurante else '' }}">
+                             value="{{ restaurante.horarios if restaurante else '' }}">
                         </div>
 
                         <div class="mb-3">
@@ -78,7 +86,7 @@ Perfil del Restaurante | AutoMenu AI
                              type="text"
                              name="telefono"
                              class="form-control"
-                             value="{{ restaurante.phone if restaurante else '' }}">
+                             value="{{ restaurante.telefono if restaurante else '' }}">
                         </div>
 
                         <div class="mb-3">
@@ -86,7 +94,7 @@ Perfil del Restaurante | AutoMenu AI
                             <input
                               type="text"
                              name="whatsapp"
-                             class="form-control"
+                             class="form-control form-control-lg"
                              value="{{ restaurante.whatsapp if restaurante else '' }}">
                     
                         </div>
@@ -96,7 +104,7 @@ Perfil del Restaurante | AutoMenu AI
                             <input
                              type="text"
                              name="instagram"
-                             class="form-control"
+                             class="form-control form-control-lg"
                              value="{{ restaurante.instagram if restaurante else '' }}">
                         </div>
 
@@ -106,7 +114,7 @@ Perfil del Restaurante | AutoMenu AI
                              type="text"
                              name="tipo_comida"
                              class="form-control"
-                             value="{{ restaurante.food_type if restaurante else '' }}">
+                             value="{{ restaurante.tipo_comida if restaurante else '' }}">
                         </div>
 
                         <div class="mb-4">
@@ -115,16 +123,16 @@ Perfil del Restaurante | AutoMenu AI
                              type="url"
                              name="imagen_portada"
                              class="form-control"
-                             value="{{ restaurante.cover_image if restaurante else '' }}">
+                             value="{{ restaurante.imagen_portada if restaurante else '' }}">
                         </div>
 
                         <div class="d-grid">
 
                             <button
-                                class="btn btn-success btn-lg"
-                                type="submit">
+                                type="submit"
+                                class="btn btn-success btn-lg w-100">
 
-                                Guardar perfil
+                                Guardar cambios
 
                             </button>
 
