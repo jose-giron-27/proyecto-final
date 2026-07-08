@@ -275,6 +275,28 @@ def qr_dashboard():
 def index():
     return render_template("index.html")
 
+# Fase 12+: textos fijos de la interfaz del menú público, traducidos.
+# Solo son 3 etiquetas + 7 categorías conocidas, así que usamos un
+# diccionario fijo en vez de llamar a la IA para esto (más rápido y confiable).
+TEXTOS_UI_MENU_PUBLICO = {
+    "es": {"horario": "Horario", "direccion": "Dirección", "etiquetas": "Etiquetas"},
+    "en": {"horario": "Hours", "direccion": "Address", "etiquetas": "Tags"},
+    "fr": {"horario": "Horaires", "direccion": "Adresse", "etiquetas": "Étiquettes"},
+    "pt": {"horario": "Horário", "direccion": "Endereço", "etiquetas": "Etiquetas"},
+    "de": {"horario": "Öffnungszeiten", "direccion": "Adresse", "etiquetas": "Tags"},
+    "it": {"horario": "Orario", "direccion": "Indirizzo", "etiquetas": "Etichette"},
+}
+
+CATEGORIAS_TRADUCIDAS_MENU_PUBLICO = {
+    "es": {"entradas": "Entradas", "platos fuertes": "Platos fuertes", "hamburguesas": "Hamburguesas", "tacos": "Tacos", "bebidas": "Bebidas", "postres": "Postres", "combos": "Combos"},
+    "en": {"entradas": "Appetizers", "platos fuertes": "Main courses", "hamburguesas": "Burgers", "tacos": "Tacos", "bebidas": "Drinks", "postres": "Desserts", "combos": "Combos"},
+    "fr": {"entradas": "Entrées", "platos fuertes": "Plats principaux", "hamburguesas": "Burgers", "tacos": "Tacos", "bebidas": "Boissons", "postres": "Desserts", "combos": "Formules"},
+    "pt": {"entradas": "Entradas", "platos fuertes": "Pratos principais", "hamburguesas": "Hambúrgueres", "tacos": "Tacos", "bebidas": "Bebidas", "postres": "Sobremesas", "combos": "Combos"},
+    "de": {"entradas": "Vorspeisen", "platos fuertes": "Hauptgerichte", "hamburguesas": "Burger", "tacos": "Tacos", "bebidas": "Getränke", "postres": "Desserts", "combos": "Kombis"},
+    "it": {"entradas": "Antipasti", "platos fuertes": "Piatti principali", "hamburguesas": "Hamburger", "tacos": "Tacos", "bebidas": "Bevande", "postres": "Dolci", "combos": "Combo"},
+}
+
+
 @app.route("/menu/<slug>")
 def public_menu(slug): 
     """
@@ -301,10 +323,43 @@ def public_menu(slug):
             if platillo["is_available"]: #solo muestran los platillos disponibles
                 platillos.append(platillo)
 
+    # Fase 12+: deteccion automatica de idioma para turistas.
+    # Leemos el header "Accept-Language" que el navegador manda solo,
+    # sin que el visitante tenga que hacer nada ni elegir un idioma.
+    idiomas_soportados = {
+        "en": "ingles",
+        "fr": "frances",
+        "pt": "portugues",
+        "de": "aleman",
+        "it": "italiano",
+    }
+    codigo_idioma = request.accept_languages.best_match(list(idiomas_soportados.keys()) + ["es"])
+
+    # Si el navegador del visitante no es español y detectamos un idioma
+    # soportado, traducimos las descripciones al vuelo (no se guarda en
+    # la base de datos, es solo para esta visita).
+    if codigo_idioma and codigo_idioma != "es":
+        idioma_nombre = idiomas_soportados[codigo_idioma]
+        for platillo in platillos:
+            if platillo.get("description"):
+                resultado_traduccion = traducir_descripcion(platillo["description"], idioma=idioma_nombre)
+                if resultado_traduccion["ok"]:
+                    platillo["description"] = resultado_traduccion["traduccion"]
+
+    # Textos fijos de la interfaz (Horario, Dirección, Etiquetas) y las
+    # categorías, traducidos con el diccionario fijo (sin llamar a la IA)
+    idioma_final = codigo_idioma if codigo_idioma in TEXTOS_UI_MENU_PUBLICO else "es"
+    textos = TEXTOS_UI_MENU_PUBLICO[idioma_final]
+    categorias_traducidas = CATEGORIAS_TRADUCIDAS_MENU_PUBLICO[idioma_final]
+    for platillo in platillos:
+        categoria_original = platillo.get("category", "")
+        platillo["category"] = categorias_traducidas.get(categoria_original, categoria_original)
+
     return render_template(
          "menu/public.html",
          restaurante=restaurante,
-         platillos=platillos
+         platillos=platillos,
+         textos=textos
         ) # envía toda la info a html
 
 @app.route("/qr/<slug>") # genera un qr que automáticamente redirige al menú público del restaurante
