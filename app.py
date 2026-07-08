@@ -71,6 +71,22 @@ def login_required(func):
 
     return wrapper
 
+
+# ─── Fase 12: Verificación de Plan (Free vs Pro) ──────────────────
+def es_plan_pro(restaurant_id):
+    """
+    Verifica si un restaurante tiene el Plan Pro activo.
+    Se usa para bloquear funciones de IA y el límite de platillos
+    en el Plan Gratis.
+    """
+    resultado = db_get("restaurants", filtros={"id": restaurant_id})
+    if resultado["ok"] and resultado["data"]:
+        return resultado["data"][0].get("plan") == "pro"
+    return False
+
+
+LIMITE_PLATILLOS_PLAN_GRATIS = 10
+
 # ─── Rutas base ───────────────────────────────────────────────
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -348,7 +364,12 @@ def ai_description(dish_id):
 
     # Guardamos los datos del platillo en una variable
     platillo = resultado["data"]
-    
+
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(platillo["restaurant_id"]):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Paso 2: Obtener el tono que eligio el usuario en el formulario
     # Si no eligio ninguno, usamos "casual" por defecto
     tono = request.form.get("tono", "casual")
@@ -402,6 +423,11 @@ def ai_translate(dish_id):
 
     platillo = resultado["data"]
 
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(platillo["restaurant_id"]):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Paso 2: Obtener el idioma elegido, por defecto ingles
     idioma = request.form.get("idioma", "ingles")
 
@@ -454,6 +480,11 @@ def ai_caption(dish_id):
 
     platillo = resultado["data"]
 
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(platillo["restaurant_id"]):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Paso 2: Obtener la red social elegida, por defecto instagram
     red = request.form.get("red", "instagram")
 
@@ -505,6 +536,11 @@ def ai_combo():
         return manejar_error("Restaurante no encontrado", contexto="Sugerir combo")
 
     restaurant_id = restaurante["data"][0]["id"]
+
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(restaurant_id):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
 
     # Paso 2: Obtener todos los platillos disponibles del restaurante
     # Usamos un for loop para filtrar solo los disponibles
@@ -562,6 +598,11 @@ def ai_tags(dish_id):
 
     platillo = resultado["data"]
 
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(platillo["restaurant_id"]):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Paso 2: Extraer los ingredientes del platillo
     ingredientes = platillo.get("ingredients", "")
     
@@ -612,6 +653,11 @@ def ai_name(dish_id):
 
     platillo = resultado["data"]
 
+    # Fase 12: las funciones de IA son exclusivas del Plan Pro
+    if not es_plan_pro(platillo["restaurant_id"]):
+        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Paso 2: Obtener el nombre original del platillo
     nombre_original = platillo.get("name", "")
 
@@ -652,6 +698,16 @@ def ai_scan():
     4. Devuelve los platillos detectados a la pantalla de revision
     5. El usuario revisa y confirma cuales guardar en scan_review.html
     """
+    # Fase 12: el escaneo de menú con IA es exclusivo del Plan Pro
+    user_id = session.get("user")
+    restaurante = db_get("restaurants", filtros={"user_id": user_id})
+    if not restaurante["ok"] or not restaurante["data"]:
+        return redirect(url_for("profile"))
+    restaurant_id = restaurante["data"][0]["id"]
+    if not es_plan_pro(restaurant_id):
+        flash("El escaneo de menús con IA es exclusivo del Plan Pro. Actualizá tu plan para usarlo.", "warning")
+        return redirect(url_for("dish_list"))
+
     # Si es GET, simplemente mostrar el formulario de escaneo
     if request.method == "GET":
         return render_template("dishes/scan.html")
@@ -761,7 +817,18 @@ def dish_list():
     mas_caro = platillo_mas_caro(platillos)
     mas_barato = platillo_mas_barato(platillos)
     platillo_dia = sugerir_platillo_del_dia(platillos)
-    return render_template("dishes/list.html", platillos=platillos, categoria=categoria, promedio=promedio, mas_caro=mas_caro, mas_barato=mas_barato, platillo_dia=platillo_dia)
+
+    # Fase 12: pasamos info del plan para mostrar el aviso de límite/IA en la UI
+    plan_pro = es_plan_pro(restaurant_id)
+
+    return render_template(
+        "dishes/list.html",
+        platillos=platillos, categoria=categoria, promedio=promedio,
+        mas_caro=mas_caro, mas_barato=mas_barato, platillo_dia=platillo_dia,
+        plan_pro=plan_pro,
+        limite_platillos=LIMITE_PLATILLOS_PLAN_GRATIS,
+        cantidad_platillos=len(platillos)
+    )
 
 @app.route("/dishes/create", methods=["GET", "POST"])
 @login_required
@@ -771,6 +838,19 @@ def dish_create():
     if not restaurante["ok"] or not restaurante["data"]:
         return redirect(url_for("profile"))
     restaurant_id = restaurante["data"][0]["id"]
+
+    # Fase 12: el Plan Gratis solo permite hasta 10 platillos
+    if not es_plan_pro(restaurant_id):
+        platillos_existentes = get_dishes(restaurant_id)
+        cantidad_actual = len(platillos_existentes["data"]) if platillos_existentes["ok"] else 0
+        if cantidad_actual >= LIMITE_PLATILLOS_PLAN_GRATIS:
+            flash(
+                f"Alcanzaste el límite de {LIMITE_PLATILLOS_PLAN_GRATIS} platillos del Plan Gratis. "
+                "Actualizá a Pro para agregar platillos ilimitados.",
+                "warning"
+            )
+            return redirect(url_for("dish_list"))
+
     if request.method == "POST":
         nombre = request.form.get("nombre", "")
         try:
