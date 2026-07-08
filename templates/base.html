@@ -29,6 +29,7 @@
 <body class="bg-light">
 
     <!-- NAVBAR -->
+    {% block navbar %}
 
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
 
@@ -58,6 +59,8 @@
 
                 <ul class="navbar-nav ms-auto align-items-lg-center">
 
+                    {% if not session.user %}
+
                     <li class="nav-item">
 
                         <a
@@ -82,17 +85,7 @@
 
                     </li>
 
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="#planes">
-
-                            Planes
-
-                        </a>
-
-                    </li>
+                    {% endif %}
 
                     {% if session.user %}
 
@@ -115,6 +108,18 @@
                             href="/dishes">
 
                             Mis platillos
+
+                        </a>
+
+                    </li>
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="/profile">
+
+                            Planes
 
                         </a>
 
@@ -145,6 +150,18 @@
                     </li>
 
                     {% else %}
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="#planes">
+
+                            Planes
+
+                        </a>
+
+                    </li>
 
                     <li class="nav-item ms-lg-3">
 
@@ -179,6 +196,8 @@
         </div>
 
     </nav>
+
+    {% endblock %}
 
     <!-- CONTENIDO -->
 

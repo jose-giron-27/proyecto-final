@@ -123,7 +123,7 @@ def login():
 
             flash("Bienvenido.", "success")
 
-            return redirect(url_for("index"))
+            return redirect(url_for("dashboard"))
 
         flash(resultado["error"], "danger")
 
@@ -210,7 +210,8 @@ def dashboard():
         restaurante = obtener_restaurante(session["user"])
 
         if not restaurante["ok"] or not restaurante["data"]:
-            raise Exception("No se encontró el restaurante.")
+            flash("Completá el perfil de tu restaurante para empezar.", "info")
+            return redirect(url_for("profile"))
 
         restaurante = restaurante["data"][0]
 
@@ -275,6 +276,28 @@ def qr_dashboard():
 def index():
     return render_template("index.html")
 
+# Fase 12+: textos fijos de la interfaz del menú público, traducidos.
+# Solo son 3 etiquetas + 7 categorías conocidas, así que usamos un
+# diccionario fijo en vez de llamar a la IA para esto (más rápido y confiable).
+TEXTOS_UI_MENU_PUBLICO = {
+    "es": {"horario": "Horario", "direccion": "Dirección", "etiquetas": "Etiquetas"},
+    "en": {"horario": "Hours", "direccion": "Address", "etiquetas": "Tags"},
+    "fr": {"horario": "Horaires", "direccion": "Adresse", "etiquetas": "Étiquettes"},
+    "pt": {"horario": "Horário", "direccion": "Endereço", "etiquetas": "Etiquetas"},
+    "de": {"horario": "Öffnungszeiten", "direccion": "Adresse", "etiquetas": "Tags"},
+    "it": {"horario": "Orario", "direccion": "Indirizzo", "etiquetas": "Etichette"},
+}
+
+CATEGORIAS_TRADUCIDAS_MENU_PUBLICO = {
+    "es": {"entradas": "Entradas", "platos fuertes": "Platos fuertes", "hamburguesas": "Hamburguesas", "tacos": "Tacos", "bebidas": "Bebidas", "postres": "Postres", "combos": "Combos"},
+    "en": {"entradas": "Appetizers", "platos fuertes": "Main courses", "hamburguesas": "Burgers", "tacos": "Tacos", "bebidas": "Drinks", "postres": "Desserts", "combos": "Combos"},
+    "fr": {"entradas": "Entrées", "platos fuertes": "Plats principaux", "hamburguesas": "Burgers", "tacos": "Tacos", "bebidas": "Boissons", "postres": "Desserts", "combos": "Formules"},
+    "pt": {"entradas": "Entradas", "platos fuertes": "Pratos principais", "hamburguesas": "Hambúrgueres", "tacos": "Tacos", "bebidas": "Bebidas", "postres": "Sobremesas", "combos": "Combos"},
+    "de": {"entradas": "Vorspeisen", "platos fuertes": "Hauptgerichte", "hamburguesas": "Burger", "tacos": "Tacos", "bebidas": "Getränke", "postres": "Desserts", "combos": "Kombis"},
+    "it": {"entradas": "Antipasti", "platos fuertes": "Piatti principali", "hamburguesas": "Hamburger", "tacos": "Tacos", "bebidas": "Bevande", "postres": "Dolci", "combos": "Combo"},
+}
+
+
 @app.route("/menu/<slug>")
 def public_menu(slug): 
     """
@@ -301,10 +324,43 @@ def public_menu(slug):
             if platillo["is_available"]: #solo muestran los platillos disponibles
                 platillos.append(platillo)
 
+    # Fase 12+: deteccion automatica de idioma para turistas.
+    # Leemos el header "Accept-Language" que el navegador manda solo,
+    # sin que el visitante tenga que hacer nada ni elegir un idioma.
+    idiomas_soportados = {
+        "en": "ingles",
+        "fr": "frances",
+        "pt": "portugues",
+        "de": "aleman",
+        "it": "italiano",
+    }
+    codigo_idioma = request.accept_languages.best_match(list(idiomas_soportados.keys()) + ["es"])
+
+    # Si el navegador del visitante no es español y detectamos un idioma
+    # soportado, traducimos las descripciones al vuelo (no se guarda en
+    # la base de datos, es solo para esta visita).
+    if codigo_idioma and codigo_idioma != "es":
+        idioma_nombre = idiomas_soportados[codigo_idioma]
+        for platillo in platillos:
+            if platillo.get("description"):
+                resultado_traduccion = traducir_descripcion(platillo["description"], idioma=idioma_nombre)
+                if resultado_traduccion["ok"]:
+                    platillo["description"] = resultado_traduccion["traduccion"]
+
+    # Textos fijos de la interfaz (Horario, Dirección, Etiquetas) y las
+    # categorías, traducidos con el diccionario fijo (sin llamar a la IA)
+    idioma_final = codigo_idioma if codigo_idioma in TEXTOS_UI_MENU_PUBLICO else "es"
+    textos = TEXTOS_UI_MENU_PUBLICO[idioma_final]
+    categorias_traducidas = CATEGORIAS_TRADUCIDAS_MENU_PUBLICO[idioma_final]
+    for platillo in platillos:
+        categoria_original = platillo.get("category", "")
+        platillo["category"] = categorias_traducidas.get(categoria_original, categoria_original)
+
     return render_template(
          "menu/public.html",
          restaurante=restaurante,
-         platillos=platillos
+         platillos=platillos,
+         textos=textos
         ) # envía toda la info a html
 
 @app.route("/qr/<slug>") # genera un qr que automáticamente redirige al menú público del restaurante
@@ -404,63 +460,6 @@ def ai_description(dish_id):
     # Paso 6: Redirigir de vuelta a donde vino el click (lista o pantalla de editar)
     if request.form.get("next") == "edit":
         return redirect(url_for("dish_edit", dish_id=dish_id))
-    return redirect(url_for("dish_list"))
-
-
-@app.route("/ai/translate/<dish_id>", methods=["POST"])
-@login_required
-def ai_translate(dish_id):
-    """
-    Traduce la descripcion de un platillo al idioma indicado.
-    
-    Flujo:
-    1. Busca el platillo en Supabase por su ID
-    2. Obtiene el idioma elegido por el usuario (por defecto ingles)
-    3. Llama a traducir_descripcion() en ai_utils.py
-    4. Guarda la traduccion en ai_generations para historial
-    5. Redirige de vuelta a la lista de platillos
-    """
-    # Paso 1: Buscar el platillo en Supabase
-    resultado = get_dish_by_id(dish_id)
-    if not resultado["ok"]:
-        return manejar_error(resultado["error"], contexto="Obtener platillo para traduccion")
-
-    platillo = resultado["data"]
-
-    # Fase 12: las funciones de IA son exclusivas del Plan Pro
-    if not es_plan_pro(platillo["restaurant_id"]):
-        flash("Esta función de IA es exclusiva del Plan Pro. Actualizá tu plan para usarla.", "warning")
-        return redirect(url_for("dish_list"))
-
-    # Paso 2: Obtener el idioma elegido, por defecto ingles
-    idioma = request.form.get("idioma", "ingles")
-
-    # Usamos la descripcion generada por IA si existe, si no la descripcion normal
-    descripcion = platillo.get("description", "")
-
-    # Si el platillo no tiene descripcion, no hay nada que traducir
-    if not descripcion:
-        return manejar_error("El platillo no tiene descripcion para traducir", contexto="Traduccion IA")
-
-    # Paso 3: Llamar a la funcion de traduccion con while loop de reintentos
-    resultado_ia = traducir_descripcion(descripcion=descripcion, idioma=idioma)
-
-    if not resultado_ia["ok"]:
-        return manejar_error(resultado_ia["error"], contexto="Traducir descripcion con IA")
-
-    # Paso 4: Guardar la traduccion en ai_generations para historial
-    from db import db_insert
-    db_insert("ai_generations", {
-        "dish_id": dish_id,
-        "type": "translation",
-        "prompt": f"idioma={idioma}",
-        "response": resultado_ia["traduccion"]
-    })
-
-    # Paso 5: Actualizar la descripcion del platillo con la traduccion
-    update_dish(dish_id, {"description": resultado_ia["traduccion"]})
-
-    # Paso 6: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
 

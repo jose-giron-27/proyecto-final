@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{ restaurante.nombre }} | AutoMenu AI
+{{ restaurante.name }} | AutoMenu AI
+{% endblock %}
+
+{% block navbar %}
+<!-- Menú público: sin navbar de cuenta, es lo que ve el cliente final al escanear el QR -->
 {% endblock %}
 
 {% block content %}
@@ -44,12 +48,12 @@
         </p>
 
         <p>
-            <strong>Horario:</strong>
+            <strong>{{ textos.horario }}:</strong>
             {{ restaurante.opening_hours }}
         </p>
 
         <p>
-            <strong>Dirección:</strong>
+            <strong>{{ textos.direccion }}:</strong>
             {{ restaurante.address }}
         </p>
 
@@ -136,7 +140,7 @@
 
                         <p>
 
-                            <strong>Etiquetas:</strong>
+                            <strong>{{ textos.etiquetas }}:</strong>
 
                             {{ platillo.tags|join(', ') }}
 
