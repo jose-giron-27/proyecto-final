@@ -648,7 +648,8 @@ def ai_tags(dish_id):
     
     # Si no tiene ingredientes, no podemos recomendar etiquetas
     if not ingredientes:
-        return manejar_error("El platillo no tiene ingredientes registrados", contexto="Recomendar etiquetas")
+        flash("Agregá los ingredientes del platillo antes de generar etiquetas con IA.", "warning")
+        return redirect(url_for("dish_list"))
 
     # Paso 3: Llamar a la funcion de etiquetas con while loop de reintentos
     resultado_ia = recomendar_etiquetas(ingredientes=ingredientes)
@@ -902,7 +903,8 @@ def dish_create():
         try:
             precio = float(request.form.get("precio", 0))
         except ValueError:
-            return manejar_error("El precio debe ser un numero valido", contexto="Crear platillo")
+            flash("El precio debe ser un número válido.", "warning")
+            return redirect(url_for("dish_create"))
         categoria = request.form.get("categoria", "")
         ingredientes = request.form.get("ingredientes", "")
         etiquetas = request.form.getlist("etiquetas")
@@ -951,9 +953,15 @@ def dish_edit(dish_id):
         else:
             imagen_url = request.form.get("imagen_url", "")
 
+        try:
+            precio = float(request.form.get("precio", 0))
+        except ValueError:
+            flash("El precio debe ser un número válido.", "warning")
+            return redirect(url_for("dish_edit", dish_id=dish_id))
+
         campos = {
             "name": request.form.get("nombre", ""),
-            "price": float(request.form.get("precio", 0)),
+            "price": precio,
             "category": request.form.get("categoria", ""),
             "ingredients": request.form.get("ingredientes", ""),
             "image_url": imagen_url,
