@@ -1,3 +1,8 @@
+<!--
+    auth/login.html - Formulario de /login (ver app.py: función login())
+    method="POST" con name="email"/name="password": esos "name" son las
+    llaves que app.py lee con request.form["email"] y request.form["password"].
+-->
 {% extends "base.html" %}
 
 {% block title %}
@@ -53,12 +58,12 @@ Iniciar sesión | AutoMenu AI
                             Contraseña
                         </label>
 
+                        <!-- required hace que el navegador valide automáticamente sin tener que escribir Python todavía -->
                         <input
                             type="password"
                             name="password"
                             class="form-control form-control-lg"
                             placeholder="********"
-                            <!-- required hace que el navegador valide automáticamente sin tener que escribir Python todavía -->
                             required>
 
                     </div>

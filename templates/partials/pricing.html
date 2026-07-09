@@ -1,3 +1,10 @@
+<!--
+    partials/pricing.html - Tabla de precios (Free vs Pro), Fase 12
+    No es una página por sí sola: se reutiliza con {% include %} tanto en
+    planes.html como en index.html (landing page), para no duplicar el HTML.
+    "plan_actual" (None / "free" / "pro") lo calcula la ruta que la incluye
+    y decide qué botón mostrar en cada tarjeta.
+-->
 <div class="container">
 
     <h2 class="fw-bold text-center mb-5">
@@ -48,6 +55,9 @@
 
                     </p>
 
+                    <!-- 3 casos: ya está en Free (botón deshabilitado), ya es Pro
+                         (no tiene sentido "bajar" de plan), o es visitante sin
+                         cuenta (plan_actual es None -> cae al {% else %}) -->
                     {% if plan_actual == "free" %}
 
                     <button class="btn btn-outline-secondary w-100 mt-3" disabled>

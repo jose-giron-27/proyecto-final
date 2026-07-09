@@ -1,3 +1,9 @@
+<!--
+    base.html - Plantilla base (layout) de AutoMenu AI
+    Todas las demás páginas hacen {% extends "base.html" %} y solo rellenan
+    el bloque {% block content %}; así el navbar, footer y links a
+    Bootstrap/styles.css quedan iguales en todo el sitio sin repetir código.
+-->
 <!DOCTYPE html>
 <html lang="es">
 
@@ -59,6 +65,9 @@
 
                 <ul class="navbar-nav ms-auto align-items-lg-center">
 
+                    <!-- session.user existe solo si hay un login activo (lo guarda
+                         Flask en session["user"] dentro de app.py); según eso se
+                         muestran links distintos: visitante vs. usuario logueado -->
                     {% if not session.user %}
 
                     <li class="nav-item">
@@ -203,6 +212,10 @@
 
     <main>
 
+        <!-- Muestra los mensajes de flash() que mandan las rutas de app.py
+             (ej. "Cuenta creada correctamente.", "success"). Cada mensaje es
+             una tupla (categoria, texto); el for la desempaqueta directo.
+             category define el color de Bootstrap (success/danger/warning/info) -->
         {% with messages = get_flashed_messages(with_categories=true) %}
 
             {% if messages %}

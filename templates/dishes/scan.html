@@ -1,3 +1,9 @@
+<!--
+    dishes/scan.html - Formulario de /ai/scan (GET) (ver app.py: función ai_scan())
+    Sube una foto del menú físico; al enviar el POST, ai_scan() en app.py
+    lee request.files["imagen"] y la manda a escanear_menu_desde_imagen()
+    en ai_utils.py (IA de visión) para detectar los platillos automáticamente.
+-->
 {% extends "base.html" %}
 
 {% block title %}
@@ -48,10 +54,14 @@ Escanear menú | AutoMenu AI
 
                             </label>
 
+                            <!-- name="imagen" es OBLIGATORIO: app.py busca
+                                 exactamente request.files["imagen"] en ai_scan() -->
                             <input
                                 type="file"
+                                name="imagen"
                                 class="form-control form-control-lg"
-                                accept="image/*">
+                                accept="image/*"
+                                required>
 
                         </div>
 

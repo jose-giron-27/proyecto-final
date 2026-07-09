@@ -1,3 +1,10 @@
+<!--
+    menu/public.html - Página /menu/<slug> (ver app.py: función public_menu())
+    Es lo que ve el CLIENTE al escanear el QR, sin necesidad de cuenta.
+    "platillos" ya viene filtrado (solo is_available=True) y con
+    description/category ya traducidos si el navegador del visitante no
+    está en español (detección automática con Accept-Language en app.py).
+-->
 {% extends "base.html" %}
 
 {% block title %}
@@ -38,6 +45,9 @@
         <h1 class="fw-bold display-4">
             {{ restaurante.name }}
         </h1>
+        <!-- OJO: "food_type" no existe en la tabla "restaurants" de Supabase
+             (ver columnas reales en db.py/README), así que este badge
+             siempre sale vacío. No truena, pero no muestra nada. -->
         <p class="badge bg-success">
 
             {{ restaurante.food_type }}
@@ -80,6 +90,8 @@
             
             </a>
             {% endif %}
+            <!-- "facebook" tampoco existe en la tabla "restaurants"; este
+                 bloque nunca se muestra hasta que se agregue esa columna -->
             {% if restaurante.facebook %}
             <a
                 href="{{ restaurante.facebook }}"

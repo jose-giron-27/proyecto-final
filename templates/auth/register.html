@@ -1,3 +1,10 @@
+<!--
+    auth/register.html - Formulario de /register (ver app.py: función register())
+    Mismo patrón que login.html: name="email"/name="password" son las
+    llaves que app.py lee con request.form. En el backend, auth_register()
+    (db.py) crea el usuario con supabase.auth.sign_up() (Supabase Auth,
+    no una tabla propia).
+-->
 {% extends "base.html" %}
 
 {% block title %}

@@ -30,6 +30,8 @@ def manejar_error(error, contexto=""):
         mensaje = "Algo salió mal en el servidor."
 
     # Respuesta JSON para el frontend
+    # Flask permite retornar una TUPLA (respuesta, código_http); así se
+    # manda el JSON y el status code (404/401/500) en un solo return
     return jsonify({
         "ok": False,
         "mensaje": mensaje,

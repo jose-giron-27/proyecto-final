@@ -44,17 +44,21 @@ def agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url="", eti
 # ─── Editar platillo ──────────────────────────────────────────
 def editar_platillo(platillo, campos):
     """Actualiza los campos de un platillo y registra la fecha de edición."""
+    # campos.items() entrega pares (clave, valor) como TUPLAS; el for los
+    # desempaqueta directo en dos variables (clave, valor) en cada vuelta.
     for clave, valor in campos.items():
-        if clave in platillo:
+        if clave in platillo:            # solo actualiza llaves que ya existen
             platillo[clave] = valor
-    platillo["updated_at"] = datetime.now().isoformat()
+    platillo["updated_at"] = datetime.now().isoformat()  # registra fecha de edición
     return {"ok": True, "platillo": platillo}
 
 # ─── Eliminar platillo ────────────────────────────────────────
 def eliminar_platillo(lista_platillos, nombre):
     """Elimina un platillo de la lista por nombre. Retorna True si lo encontró."""
+    # enumerate() también genera TUPLAS: (índice, elemento) en cada vuelta del for.
+    # Se necesita el índice "i" para poder borrar con pop(i) en la posición correcta.
     for i, p in enumerate(lista_platillos):
-        if p["name"].lower() == nombre.lower():
+        if p["name"].lower() == nombre.lower():   # comparación sin distinguir mayúsculas
             lista_platillos.pop(i)
             return {"ok": True}
     return {"ok": False, "error": "Platillo no encontrado"}
@@ -62,8 +66,8 @@ def eliminar_platillo(lista_platillos, nombre):
 # ─── Filtrar por categoría ────────────────────────────────────
 def filtrar_por_categoria(lista_platillos, categoria):
     """Recorre la lista con for y retorna solo los de esa categoría."""
-    resultado = []
-    for platillo in lista_platillos:
+    resultado = []                        # lista vacía donde se acumulan los resultados
+    for platillo in lista_platillos:      # ciclo for: recorre TODA la lista de platillos
         if platillo["category"].lower() == categoria.lower():
             resultado.append(platillo)
     return resultado
@@ -71,11 +75,13 @@ def filtrar_por_categoria(lista_platillos, categoria):
 # ─── Promedio de precios ──────────────────────────────────────
 def promedio_precios(lista_platillos):
     """Calcula el promedio de precios usando for y math."""
-    if not lista_platillos:
+    if not lista_platillos:               # condicional: evita división por cero
         return 0
     total = 0
     for platillo in lista_platillos:
-        total += platillo["price"]
+        total += platillo["price"]        # operador aritmético += (acumulador)
+    # división (/) para el promedio, math.fabs() para asegurar valor positivo,
+    # round() para dejarlo con 2 decimales (formato de precio)
     return round(math.fabs(total / len(lista_platillos)), 2)
 
 # ─── Platillo más caro y más barato ──────────────────────────
@@ -126,6 +132,8 @@ def sugerir_platillo_del_dia(lista_platillos):
     return random.choice(disponibles)
 
 # ─── Punto de entrada para pruebas en consola ─────────────────
+# Este bloque solo corre si el archivo se ejecuta directamente
+# (ej. "python menu_logic.py"), NO cuando app.py lo importa.
 if __name__ == "__main__":
     platillos = []
 

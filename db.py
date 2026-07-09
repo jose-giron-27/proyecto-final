@@ -19,14 +19,20 @@ def get_db():
     Retorna la conexión a Supabase.
     Si no existe, la crea. Si faltan las variables de entorno, lanza un error.
     """
+    # "global" permite modificar la variable "supabase" definida arriba del
+    # módulo (fuera de la función). Sin esto, "supabase = ..." crearía una
+    # variable local nueva y no guardaría la conexión para la próxima llamada.
     global supabase
-    if supabase is None:
+    if supabase is None:               # solo se conecta la PRIMERA vez que se pide
         if not SUPABASE_URL or not SUPABASE_KEY:
             raise ValueError("Faltan las variables SUPABASE_URL o SUPABASE_KEY en el .env")
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-    return supabase
+    return supabase                    # las siguientes veces reutiliza la misma conexión
 
 # ─── Helpers de base de datos ─────────────────────────────────
+# Estas 4 funciones son genéricas: reciben el nombre de la tabla como
+# parámetro, así que sirven para "dishes", "restaurants" o cualquier otra
+# tabla sin repetir código (evita duplicar el mismo try/except en cada CRUD).
 def db_get(tabla, filtros=None):
     """Obtiene registros de una tabla con filtros opcionales."""
     if filtros is None:
@@ -34,6 +40,8 @@ def db_get(tabla, filtros=None):
     try:
         db = get_db()
         query = db.table(tabla).select("*")
+        # Arma la consulta dinámicamente: por cada (clave, valor) en el dict
+        # de filtros, agrega un ".eq(clave, valor)" (WHERE clave = valor)
         for clave, valor in filtros.items():
             query = query.eq(clave, valor)
         return {"ok": True, "data": query.execute().data}
@@ -72,6 +80,10 @@ def db_delete(tabla, record_id):
         return {"ok": False, "error": str(e)}
 
 # ─── Autenticación con Supabase ─────────────────────────────── #lo agragamos aquí justo para que se mantenga la arquitectura constante
+# IMPORTANTE para la defensa: no hay una tabla "users" nuestra en Supabase.
+# db.auth.* llama directo a Supabase Auth, que guarda los usuarios (con
+# contraseña ya hasheada) en su tabla interna "auth.users". app.py solo
+# guarda session["user"] = user.id después del login/registro exitoso.
 def auth_register(email, password):
     """
     Registra un nuevo usuario utilizando Supabase Auth.
@@ -192,7 +204,7 @@ def delete_dish(dish_id):
 
 def toggle_dish_availability(dish_id, is_available):
     """Activa o desactiva la disponibilidad de un platillo."""
-    from datetime import datetime
+    from datetime import datetime  # import local: solo se necesita aquí adentro
     return db_update("dishes", dish_id, {
         "is_available": is_available,
         "updated_at": datetime.now().isoformat()

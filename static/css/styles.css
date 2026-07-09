@@ -1,5 +1,10 @@
+/* styles.css - Estilos globales de AutoMenu AI
+   Este archivo SOBRESCRIBE los estilos por defecto de Bootstrap 5 (que ya
+   viene enlazado en base.html) para aplicar la paleta crema/beige + verde
+   sobrio del proyecto, en vez de los colores genéricos de Bootstrap. */
+
 body{
-    background:#F3EFE6;
+    background:#F3EFE6;               /* crema de fondo para toda la página */
     font-family:Arial, Helvetica, sans-serif;
 }
 
@@ -46,6 +51,8 @@ body{
     background-color:#5E7D5E !important;
 }
 
+/* Botones custom (no existen en Bootstrap por defecto): ocre para acentos
+   secundarios y verde oscuro para botones de mayor jerarquía */
 .btn-ocre{
     background-color:#B8934A;
     border-color:#B8934A;
@@ -68,6 +75,7 @@ body{
     color:#fff;
 }
 
+/* Espaciado vertical estándar entre secciones de la landing page */
 section{
     padding-top:80px;
     padding-bottom:80px;
@@ -157,9 +165,10 @@ footer{
 }
 
 html{
-    scroll-behavior:smooth;
+    scroll-behavior:smooth;    /* scroll suave al hacer click en links tipo #ancla */
 }
 
+/* Media query: ajustes para pantallas de tablet/celular (menos de 992px) */
 @media(max-width:992px){
 
     section{

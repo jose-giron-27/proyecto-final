@@ -1,3 +1,9 @@
+<!--
+    dashboard/index.html - Página /dashboard (ver app.py: función dashboard())
+    Todas las variables ({{ restaurante }}, {{ total_platillos }},
+    {{ menu_activo }}, {{ menu_publico }}) las calcula esa función en
+    app.py y las pasa con render_template(); acá solo se muestran.
+-->
 {% extends "base.html" %}
 
 {% block title %}
@@ -55,6 +61,8 @@ Dashboard | AutoMenu AI
 
                 <h5>Estado del menú</h5>
 
+                <!-- menu_activo es True si HAY al menos un platillo marcado
+                     como disponible (se calcula con un for+break en app.py) -->
                 {% if menu_activo %}
 
                     <span class="badge bg-success">

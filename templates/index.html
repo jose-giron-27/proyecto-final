@@ -1,3 +1,11 @@
+<!--
+    index.html - Landing page pública "/" (ver app.py: función index())
+    Página mayormente estática (marketing), sin lógica de negocio: solo
+    Hero, Problema, Solución, Funcionalidades, Cómo funciona, Planes y CTA.
+    Todo el bloque desde "FUNCIONALIDADES" hasta el final está dentro de
+    {% if not session.user %} porque no tiene sentido mostrarle a alguien
+    que ya inició sesión el mismo mensaje de "creá tu cuenta".
+-->
 {% extends "base.html" %}
 
 {% block title %}
@@ -414,7 +422,9 @@ AutoMenu AI
 
 </section>
 <!-- PLANES -->
-
+<!-- Reutiliza la misma tabla de precios de /planes. Como index() en app.py
+     no pasa "plan_actual", acá siempre vale None -> pricing.html cae en el
+     {% else %} de cada botón (botones de "Empezar"/"Comenzar ahora") -->
 <section id="planes" class="py-5">
 
     {% include "partials/pricing.html" %}

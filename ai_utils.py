@@ -19,6 +19,12 @@ def generar_descripcion(nombre, ingredientes, precio, tono="casual", max_intento
     Genera una descripcion atractiva del platillo.
     Usa while para reintentar si la API falla.
     """
+    # Ciclo WHILE (no for): se repite mientras no se acabe max_intentos,
+    # pero también puede terminar antes con un "return" si la API responde
+    # bien. Este mismo patrón (while + try/except + contador) se repite en
+    # todas las funciones de este archivo porque llaman a un servicio externo
+    # (OpenAI) que puede fallar por red/rate-limit, y no queremos que la app
+    # se caiga por eso.
     intentos = 0
     while intentos < max_intentos:
         try:
@@ -96,6 +102,8 @@ def sugerir_combo(lista_platillos, max_intentos=3):
     intentos = 0
     while intentos < max_intentos:
         try:
+            # List comprehension: recorre lista_platillos y saca solo el "name"
+            # de cada dict -> es un for compacto en una sola línea
             nombres = [p["name"] for p in lista_platillos]
             prompt = f"""Tengo estos platillos en mi restaurante: {", ".join(nombres)}.
 Sugiere el mejor combo posible combinando 2 o 3 de ellos.
@@ -171,7 +179,9 @@ def escanear_menu_desde_imagen(imagen_bytes, max_intentos=3):
     intentos = 0
     while intentos < max_intentos:
         try:
-            # Convertir los bytes de la imagen a base64
+            # La API de OpenAI no acepta el archivo de imagen directo: hay que
+            # convertirlo a texto base64 y mandarlo como "data:image/..." URL.
+            # Por eso esta función recibe bytes (no una ruta de archivo).
             imagen_base64 = base64.standard_b64encode(imagen_bytes).decode("utf-8")
 
             prompt = """Analiza esta imagen de un menu de restaurante.
@@ -197,12 +207,15 @@ Si no puedes leer el precio, usa 0.0. Si no puedes identificar la categoria, usa
                 }]
             )
 
-            # Limpiar la respuesta y parsear el JSON
+            # El modelo a veces envuelve el JSON en ```json ... ``` (markdown);
+            # hay que quitar eso antes de parsearlo o json.loads() truena.
             texto = respuesta.choices[0].message.content.strip()
             texto_limpio = texto.replace("```json", "").replace("```", "").strip()
-            platillos = json.loads(texto_limpio)
+            platillos = json.loads(texto_limpio)  # convierte el string a lista de dicts
             return {"ok": True, "platillos": platillos}
 
+        # Excepción específica para cuando el modelo devuelve un JSON mal
+        # formado (se reintenta igual que cualquier otro error)
         except json.JSONDecodeError as e:
             intentos += 1
             print(f"[ai_utils] Intento {intentos} fallido en escanear_menu_desde_imagen (JSON invalido): {e}")

@@ -1,3 +1,10 @@
+<!--
+    dishes/create.html - Formulario de /dishes/create (ver app.py: dish_create())
+    Cada "name" de los inputs es la llave que app.py lee con request.form.get(...)
+    y pasa a agregar_platillo() (menu_logic.py) para validar antes de guardarlo.
+    enctype="multipart/form-data" es obligatorio porque el form incluye un
+    <input type="file"> (subida de imagen a Supabase Storage).
+-->
 {% extends "base.html" %}
 
 {% block title %}
@@ -125,6 +132,10 @@ Nuevo platillo | AutoMenu AI
 
                             </label>
 
+                            <!-- OJO para la defensa: este input manda UN string
+                                 ("Picante, Vegetariano..."); app.py lo recibe con
+                                 request.form.getlist("etiquetas") como lista de
+                                 un solo elemento, no separa por comas -->
                             <input
                                 type="text"
                                 name="etiquetas"
