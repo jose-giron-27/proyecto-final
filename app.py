@@ -544,7 +544,11 @@ def ai_caption(dish_id):
         "response": resultado_ia["caption"]
     })
 
-    # Paso 5: Redirigir de vuelta a la lista de platillos
+    # Paso 5: Mostrar el caption generado como mensaje flash (se copia
+    # automáticamente al portapapeles también, ver el script en base.html)
+    flash(resultado_ia["caption"], "caption")
+
+    # Paso 6: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
 

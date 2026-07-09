@@ -209,10 +209,15 @@
 
                 {% for category, message in messages %}
 
+                    {% set bs_class = 'info' if category == 'caption' else category %}
                     <div
-                        class="alert alert-{{ category }} alert-dismissible fade show shadow-sm">
+                        class="alert alert-{{ bs_class }} alert-dismissible fade show shadow-sm{{ ' js-copy-caption' if category == 'caption' else '' }}"
+                        {% if category == 'caption' %}data-caption="{{ message }}"{% endif %}>
 
                         {{ message }}
+                        {% if category == 'caption' %}
+                        <br><small class="fw-bold">📋 Copiado al portapapeles</small>
+                        {% endif %}
 
                         <button
                             type="button"
@@ -268,6 +273,15 @@
 
     <script
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <script>
+    document.querySelectorAll('.js-copy-caption').forEach(function (el) {
+        var text = el.getAttribute('data-caption');
+        if (text && navigator.clipboard) {
+            navigator.clipboard.writeText(text).catch(function () {});
+        }
+    });
     </script>
 
 </body>
