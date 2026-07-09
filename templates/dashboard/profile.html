@@ -1,3 +1,12 @@
+<!--
+    dashboard/profile.html - Página /profile (ver app.py: función profile())
+    GET: "restaurante" llega como {} si el usuario todavía no tiene perfil
+    creado (por eso todos los "if restaurante and restaurante.xxx" -> si no
+    existe, se muestran placeholders en vez de tronar).
+    POST: el <form enctype="multipart/form-data"> permite subir archivos
+    (logo/portada); cada input "name" coincide con lo que app.py lee con
+    request.form.get(...) / request.files.get(...).
+-->
 {% extends "base.html" %}
 
 {% block title %}
@@ -70,6 +79,8 @@ Perfil del Restaurante | AutoMenu AI
                         {% endif %}
                     </div>
 
+                    <!-- Este botón hace POST directo a /subscribe (Fase 12), que
+                         crea la sesión de Stripe Checkout y redirige a Stripe -->
                     <div class="d-grid mt-3">
                         {% if not restaurante or restaurante.plan != "pro" %}
                             <form action="{{ url_for('subscribe') }}" method="POST">
@@ -149,6 +160,9 @@ Perfil del Restaurante | AutoMenu AI
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Logo</label>
+                                <!-- Dos formas de poner logo: URL directa o subir archivo.
+                                     app.py revisa primero request.files["logo_archivo"];
+                                     si no hay archivo, usa el valor de "logo" (la URL) -->
                                 <input type="url" name="logo" class="form-control mb-2"
                                     value="{{ restaurante.logo_url if restaurante else '' }}"
                                     placeholder="URL de imagen">

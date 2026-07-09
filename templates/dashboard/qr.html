@@ -1,3 +1,10 @@
+<!--
+    dashboard/qr.html - Página /dashboard/qr (ver app.py: función qr_dashboard())
+    Solo muestra el QR del restaurante logueado; el QR real lo genera
+    generate_qr() en app.py (con la librería qrcode) y esta página lo
+    consume dos veces: una vez como <img src> para mostrarlo, y otra vez
+    como link de descarga con el atributo "download".
+-->
 {% extends "base.html" %}
 
 {% block title %}
@@ -20,6 +27,8 @@ Código QR
         Imprime este código QR o colócalo en las mesas de tu restaurante para que tus clientes puedan acceder fácilmente a tu menú digital.
     </p>
 
+    <!-- url_for('generate_qr', slug=...) apunta a la ruta /qr/<slug> de app.py,
+         que devuelve la imagen PNG generada al vuelo (no es un archivo guardado) -->
     <img
         src="{{ url_for('generate_qr', slug=restaurante.slug) }}"
         class="img-fluid shadow rounded"
@@ -28,6 +37,8 @@ Código QR
 </div>
 <div class="mt-4">
 
+    <!-- Mismo endpoint que el <img>, pero con "download" el navegador
+         lo guarda como archivo en vez de solo mostrarlo -->
     <a
         href="{{ url_for('generate_qr', slug=restaurante.slug) }}"
         download="menu-qr.png"

@@ -1,3 +1,10 @@
+<!--
+    dishes/edit.html - Formulario de /dishes/edit/<id> (ver app.py: dish_edit())
+    "platillo" es el dict que devuelve get_dish_by_id(); cada input llena su
+    "value" con el dato actual para precargar el formulario. Al enviar,
+    app.py arma "campos" con estos mismos "name" y llama a editar_platillo()
+    (menu_logic.py) para actualizarlo.
+-->
 {% extends "base.html" %}
 
 {% block title %}
@@ -126,6 +133,11 @@ Editar platillo | AutoMenu AI
                                     Descripción
                                 </label>
 
+                                <!-- formaction cambia a dónde se manda el form SOLO
+                                     para este botón (en vez de a dish_edit): envía a
+                                     ai_description, que genera la descripción con IA,
+                                     la guarda, y redirige de vuelta acá (name="next"
+                                     value="edit" le dice a app.py a dónde volver) -->
                                 <button
                                     type="submit"
                                     formaction="{{ url_for('ai_description', dish_id=platillo.id) }}"

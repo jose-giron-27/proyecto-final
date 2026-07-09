@@ -81,6 +81,8 @@ def es_plan_pro(restaurant_id):
 LIMITE_PLATILLOS_PLAN_GRATIS = 10
 
 # ─── Rutas base ───────────────────────────────────────────────
+# Cada ruta acepta GET y POST: en GET solo muestra el formulario (render_template);
+# en POST procesa los datos enviados (request.form) y redirige si todo salió bien.
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
@@ -89,13 +91,14 @@ def register():
         email = request.form["email"]
         password = request.form["password"]
 
+        # auth_register() en db.py llama a Supabase Auth (no hay tabla propia de usuarios)
         resultado = auth_register(email, password)
 
         if resultado["ok"]:
-            flash("Cuenta creada correctamente.", "success") # usamos flash para mostrar mensajes sin escribir java adicional 
+            flash("Cuenta creada correctamente.", "success") # usamos flash para mostrar mensajes sin escribir java adicional
             return redirect(url_for("login"))
 
-        flash(resultado["error"], "danger")
+        flash(resultado["error"], "danger")   # ej: email ya registrado, password muy corta
 
     return render_template("auth/register.html")
 
@@ -118,15 +121,14 @@ def login():
 
             return redirect(url_for("dashboard"))
 
-        flash(resultado["error"], "danger")
+        flash(resultado["error"], "danger")   # credenciales inválidas
 
     return render_template("auth/login.html")
 @app.route("/logout")
 def logout():
 
-    auth_logout()
-
-    session.clear()
+    auth_logout()      # cierra la sesión del lado de Supabase Auth
+    session.clear()     # borra session["user"] del lado de Flask
 
     flash("Sesión cerrada correctamente.", "info")
 
@@ -137,6 +139,11 @@ def logout():
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
+    """
+    GET: muestra el formulario con los datos actuales del restaurante.
+    POST: crea el restaurante si es la primera vez, o lo actualiza si ya existe
+    (se decide más abajo comprobando si obtener_restaurante() ya devuelve algo).
+    """
 
     if request.method == "POST":
 
@@ -174,12 +181,14 @@ def profile():
         "user_id": session["user"]
 }
 
-        # genera el slug automáticamente
+        # genera el slug automáticamente (ej. "Pizza Don Beto" -> "pizza-don-beto")
+        # el slug es la parte de la URL pública: /menu/<slug>
         slug = datos["name"].lower()
-        slug = re.sub(r"[^a-z0-9]+", "-", slug)
+        slug = re.sub(r"[^a-z0-9]+", "-", slug)  # cualquier caracter que no sea letra/número -> "-"
         slug = slug.strip("-")
         datos["slug"] = slug
 
+        # Si ya existe un restaurante para este usuario, actualizamos; si no, es su primera vez y lo creamos
         restaurante = obtener_restaurante(session["user"])
 
         if restaurante["ok"] and restaurante["data"]:
@@ -236,6 +245,8 @@ def dashboard():
         if resultado["ok"]:
             total_platillos = len(resultado["data"])
 
+            # "menu_activo" es True si HAY al menos un platillo disponible.
+            # break corta el for apenas encuentra el primero (no hace falta seguir buscando)
             for platillo in resultado["data"]:
                 if platillo["is_available"]:
                     menu_activo = True
@@ -398,20 +409,20 @@ def generate_qr(slug):
     """
     Generates a QR code that points to the restaurant's public menu.
     """
-
+    # Arma la URL completa del menú público (ej. https://.../menu/pizza-don-beto)
     url = request.host_url.rstrip("/") + url_for("public_menu", slug=slug)
 
-    qr = qrcode.make(url)
+    qr = qrcode.make(url)          # genera la imagen del QR con la librería qrcode
 
-    buffer = BytesIO()
+    buffer = BytesIO()             # buffer en memoria (no se guarda archivo en disco)
 
     qr.save(buffer, format="PNG")
 
-    buffer.seek(0)
+    buffer.seek(0)                 # regresa el puntero al inicio para poder leerlo
 
     return send_file(
         buffer,
-        mimetype="image/png"
+        mimetype="image/png"       # el navegador lo interpreta como imagen, no como descarga
     )
 # ─── Manejo global de errores ─────────────────────────────────
 
@@ -807,6 +818,8 @@ def ai_scan_confirm():
 
     # Paso 3: Usar for loop para insertar cada platillo aprobado en Supabase
     platillos_guardados = 0
+    # range(len(nombres)) genera índices 0,1,2... para poder leer la posición
+    # "i" de las 3 listas paralelas (nombres, precios, categorias) al mismo tiempo
     for i in range(len(nombres)):
         # Validar cada platillo con menu_logic antes de guardarlo
         try:
@@ -833,9 +846,18 @@ def ai_scan_confirm():
 
     # Paso 4: Redirigir a la lista de platillos
     print(f"[ai_scan_confirm] {platillos_guardados} platillos guardados exitosamente")
+    flash(f"Se guardaron {platillos_guardados} platillos del escaneo.", "success")
+    return redirect(url_for("dish_list"))  # <- faltaba este return (bug: sin esto, Flask no responde nada)
+
+
 @app.route("/dishes")
 @login_required
 def dish_list():
+    """
+    Lista de platillos del restaurante. Acá se usan casi todas las funciones
+    de menu_logic.py: filtrar por categoría (?categoria=... en la URL),
+    promedio de precios, el más caro/barato (recursión) y el platillo del día.
+    """
     user_id = session.get("user")
     restaurante = obtener_restaurante(user_id)
     if not restaurante["ok"] or not restaurante["data"]:
@@ -843,12 +865,16 @@ def dish_list():
     restaurant_id = restaurante["data"][0]["id"]
     resultado = get_dishes(restaurant_id)
     platillos = resultado["data"] if resultado["ok"] else []
+
+    # Filtro opcional por categoría, viene como query param: /dishes?categoria=tacos
     categoria = request.args.get("categoria", "")
     if categoria:
         platillos = filtrar_por_categoria(platillos, categoria)
+
+    # Estadísticas calculadas con las funciones de menu_logic.py
     promedio = promedio_precios(platillos)
-    mas_caro = platillo_mas_caro(platillos)
-    mas_barato = platillo_mas_barato(platillos)
+    mas_caro = platillo_mas_caro(platillos)        # recursivo
+    mas_barato = platillo_mas_barato(platillos)    # recursivo
     platillo_dia = sugerir_platillo_del_dia(platillos)
 
     # Fase 12: pasamos info del plan para mostrar el aviso de límite/IA en la UI
@@ -866,6 +892,11 @@ def dish_list():
 @app.route("/dishes/create", methods=["GET", "POST"])
 @login_required
 def dish_create():
+    """
+    GET: muestra el formulario para crear un platillo.
+    POST: valida los datos con agregar_platillo() (menu_logic.py) y lo guarda
+    en Supabase con insert_dish(), respetando el límite del Plan Gratis.
+    """
     user_id = session.get("user")
     restaurante = obtener_restaurante(user_id)
     if not restaurante["ok"] or not restaurante["data"]:
@@ -905,6 +936,8 @@ def dish_create():
         else:
             imagen_url = request.form.get("imagen_url", "")
 
+        # agregar_platillo() (menu_logic.py) valida los datos y arma el dict
+        # con las llaves en inglés que espera la tabla "dishes" de Supabase
         validacion = agregar_platillo(nombre, precio, categoria, ingredientes, imagen_url, etiquetas, descripcion)
         if not validacion["ok"]:
             return manejar_error(validacion["error"], contexto="Crear platillo")

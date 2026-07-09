@@ -1,3 +1,11 @@
+<!--
+    dishes/scan_review.html - Página que muestra ai_scan() en app.py después
+    del POST a /ai/scan. Recibe "platillos" (lista de dicts con nombre,
+    precio, categoria que detectó la IA de visión en ai_utils.py) y deja
+    que el dueño confirme/edite antes de guardarlos con /ai/scan/confirm,
+    que en app.py lee request.form.getlist("nombre"/"precio"/"categoria")
+    -por eso los inputs de abajo repiten esos "name" en cada fila.
+-->
 {% extends "base.html" %}
 
 {% block title %}
@@ -36,66 +44,61 @@ Revisar escaneo | AutoMenu AI
                     </div>
                     <div class="mb-4">
 
+                        <!-- {{ platillos|length }} cuenta cuántos detectó la IA (lista real, no fija) -->
                         <span class="badge bg-success">
-                            2 platillos detectados
+                            {{ platillos|length }} platillo(s) detectado(s)
                         </span>
 
                     </div>
+
+                    <!-- El form envía cada fila como listas paralelas: getlist("nombre")[i],
+                         getlist("precio")[i], getlist("categoria")[i] coinciden por posición.
+                         Esto es justo lo que ai_scan_confirm() en app.py recorre con
+                         "for i in range(len(nombres))" -->
+                    <form method="POST" action="{{ url_for('ai_scan_confirm') }}">
+
                     <div class="table-responsive">
 
                         <table class="table table-hover align-middle">
 
-                            <th>Categoría</th>
-                                <th class="text-center">Acciones</th>
-
+                            <thead>
                                 <tr>
 
                                     <th>Platillo</th>
-                                    <th>Precio</th>
+                                    <th>Precio (Q)</th>
                                     <th>Categoría</th>
 
                                 </tr>
-                                      
-
                             </thead>
 
                             <tbody>
 
+                                <!-- for recorre la lista real "platillos" que mandó ai_scan();
+                                     cada platillo detectado es un dict {"nombre":..,"precio":..,"categoria":..} -->
+                                {% for platillo in platillos %}
                                 <tr>
 
-                                    <td>Hamburguesa Clásica</td>
-                                    <td>Q55.00</td>
-                                    <td>Comida rápida</td>
-
-                                    <td class="text-center">
-
-                                        <button class="btn btn-outline-primary btn-sm">
-
-                                            ✏️ Editar
-
-                                        </button>
-
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm"
+                                               name="nombre" value="{{ platillo.nombre }}">
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.01" class="form-control form-control-sm"
+                                               name="precio" value="{{ platillo.precio }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm"
+                                               name="categoria" value="{{ platillo.categoria }}">
                                     </td>
 
                                 </tr>
-
+                                {% else %}
                                 <tr>
-
-                                    <td>Pizza Margarita</td>
-                                    <td>Q80.00</td>
-                                    <td>Pizzas</td>
-
-                                    <td class="text-center">
-
-                                        <button class="btn btn-outline-primary btn-sm">
-
-                                            ✏️ Editar
-
-                                        </button>
-
+                                    <td colspan="3" class="text-center text-muted">
+                                        No se detectó ningún platillo en la imagen.
                                     </td>
-
                                 </tr>
+                                {% endfor %}
 
                             </tbody>
 
@@ -108,7 +111,7 @@ Revisar escaneo | AutoMenu AI
                         <div>
 
                             <a
-                                href="/scan"
+                                href="{{ url_for('ai_scan') }}"
                                 class="btn btn-outline-secondary">
 
                                 ← Escanear nuevamente
@@ -120,7 +123,9 @@ Revisar escaneo | AutoMenu AI
                         <div>
 
                             <button
-                                class="btn btn-success btn-lg">
+                                type="submit"
+                                class="btn btn-success btn-lg"
+                                {% if not platillos %}disabled{% endif %}>
 
                                 💾 Guardar todos los platillos
 
@@ -129,6 +134,8 @@ Revisar escaneo | AutoMenu AI
                         </div>
 
                     </div>
+
+                    </form>
 
                 </div>
 
