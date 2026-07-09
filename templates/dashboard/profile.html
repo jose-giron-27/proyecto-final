@@ -8,174 +8,170 @@ Perfil del Restaurante | AutoMenu AI
 
 <div class="container py-5">
 
-    <div class="row justify-content-center">
+    <h2 class="fw-bold mb-1">Perfil del restaurante</h2>
+    <p class="text-muted mb-4">Configurá la información que aparecerá en tu menú digital.</p>
 
-        <div class="col-lg-8">
+    <div class="row g-4">
 
-            <div class="card shadow-lg border-0 rounded-4">
+        <!-- Columna izquierda: resumen visual -->
+        <div class="col-lg-4">
 
-                <div class="card-body p-5">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 text-center">
 
-                    <h2 class="fw-bold mb-3">
-                        Perfil del restaurante
-                    </h2>
+                    {% if restaurante and restaurante.logo_url %}
+                    <img
+                        src="{{ restaurante.logo_url }}"
+                        class="rounded-circle shadow-sm mb-3"
+                        style="width: 140px; height: 140px; object-fit: cover;">
+                    {% else %}
+                    <div
+                        class="rounded-circle shadow-sm bg-success d-inline-flex align-items-center justify-content-center mb-3"
+                        style="width: 140px; height: 140px;">
+                        <span class="text-white fw-bold" style="font-size: 2.5rem;">
+                            {{ restaurante.name[0] if restaurante and restaurante.name else "?" }}
+                        </span>
+                    </div>
+                    {% endif %}
 
-                    <p class="text-muted mb-5">
-                        Configurá la información que aparecerá en tu menú digital.
+                    <h5 class="fw-bold mb-1">
+                        {{ restaurante.name if restaurante and restaurante.name else "Tu restaurante" }}
+                    </h5>
+
+                    <p class="text-muted small mb-3">
+                        {{ restaurante.description if restaurante and restaurante.description else "Agregá una descripción para tus clientes." }}
                     </p>
 
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label class="form-label">Nombre del restaurante</label>
-                            <input
-                                 type="text"
-                                 name="nombre"
-                                 class="form-control"
-                                 value="{{ restaurante.name if restaurante else '' }}">
-                        </div>
+                    <hr>
+
+                    <ul class="list-unstyled text-start small mb-3">
+                        <li class="mb-2">
+                            📍 {{ restaurante.address if restaurante and restaurante.address else "Sin dirección" }}
+                        </li>
+                        <li class="mb-2">
+                            🕒 {{ restaurante.opening_hours if restaurante and restaurante.opening_hours else "Sin horario" }}
+                        </li>
+                        <li class="mb-2">
+                            📞 {{ restaurante.phone if restaurante and restaurante.phone else "Sin teléfono" }}
+                        </li>
+                        <li>
+                            📷 {{ restaurante.instagram if restaurante and restaurante.instagram else "Sin Instagram" }}
+                        </li>
+                    </ul>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold small">Plan</span>
+                        {% if restaurante and restaurante.plan == "pro" %}
+                            <span class="badge bg-success">Pro</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Gratis</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-grid mt-3">
+                        {% if not restaurante or restaurante.plan != "pro" %}
+                            <form action="{{ url_for('subscribe') }}" method="POST">
+                                <button type="submit" class="btn btn-success btn-sm w-100">⭐ Actualizar a Pro</button>
+                            </form>
+                        {% else %}
+                            <a href="{{ url_for('planes') }}" class="btn btn-outline-success btn-sm">Ver detalles del plan</a>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Columna derecha: formulario de edicion -->
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+
+                    <form method="POST" enctype="multipart/form-data">
+
+                        <h6 class="text-success fw-bold text-uppercase small mb-3">Información general</h6>
 
                         <div class="mb-3">
-                            <label class="form-label">Logo (URL)</label>
-                            <input
-                             type="url"
-                             name="logo"
-                             class="form-control form-control-lg"
-                            value="{{ restaurante.logo_url if restaurante else '' }}">
-                        
+                            <label class="form-label">Nombre del restaurante</label>
+                            <input type="text" name="nombre" class="form-control"
+                                value="{{ restaurante.name if restaurante else '' }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Descripción</label>
-                            <textarea
-                             name="descripcion"
-                             class="form-control"
-                             rows="3">{{ restaurante.description if restaurante else '' }}</textarea>
+                            <textarea name="descripcion" class="form-control" rows="3">{{ restaurante.description if restaurante else '' }}</textarea>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Dirección</label>
-                            <input
-                             type="text"
-                             name="direccion"
-                             class="form-control"
-                            value="{{ restaurante.address if restaurante else '' }}">
-                                
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">Dirección</label>
+                                <input type="text" name="direccion" class="form-control"
+                                    value="{{ restaurante.address if restaurante else '' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Horarios</label>
+                                <input type="text" name="horarios" class="form-control"
+                                    placeholder="7am - 10pm"
+                                    value="{{ restaurante.opening_hours if restaurante else '' }}">
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Horarios</label>
-                            <input
-                             type="text"
-                             name="horarios"
-                             class="form-control"
-                             value="{{ restaurante.opening_hours if restaurante else '' }}">
+                        <hr class="my-4">
+
+                        <h6 class="text-success fw-bold text-uppercase small mb-3">Contacto</h6>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" name="telefono" class="form-control"
+                                    value="{{ restaurante.phone if restaurante else '' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">WhatsApp</label>
+                                <input type="text" name="whatsapp" class="form-control"
+                                    value="{{ restaurante.whatsapp if restaurante else '' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Instagram</label>
+                                <input type="text" name="instagram" class="form-control"
+                                    value="{{ restaurante.instagram if restaurante else '' }}">
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Teléfono</label>
-                            <input
-                             type="text"
-                             name="telefono"
-                             class="form-control"
-                             value="{{ restaurante.phone if restaurante else '' }}">
+                        <hr class="my-4">
+
+                        <h6 class="text-success fw-bold text-uppercase small mb-3">Imágenes</h6>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Logo</label>
+                                <input type="url" name="logo" class="form-control mb-2"
+                                    value="{{ restaurante.logo_url if restaurante else '' }}"
+                                    placeholder="URL de imagen">
+                                <div class="text-center text-muted small mb-2">— o —</div>
+                                <input type="file" name="logo_archivo" accept="image/*" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Imagen de portada</label>
+                                <input type="url" name="imagen_portada" class="form-control mb-2"
+                                    value="{{ restaurante.cover_image_url if restaurante else '' }}"
+                                    placeholder="URL de imagen">
+                                <div class="text-center text-muted small mb-2">— o —</div>
+                                <input type="file" name="imagen_portada_archivo" accept="image/*" class="form-control form-control-sm">
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">WhatsApp</label>
-                            <input
-                              type="text"
-                             name="whatsapp"
-                             class="form-control form-control-lg"
-                             value="{{ restaurante.whatsapp if restaurante else '' }}">
-                    
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Instagram</label>
-                            <input
-                             type="text"
-                             name="instagram"
-                             class="form-control form-control-lg"
-                             value="{{ restaurante.instagram if restaurante else '' }}">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Tipo de comida</label>
-                            <input
-                             type="text"
-                             name="tipo_comida"
-                             class="form-control"
-                             value="{{ restaurante.tipo_comida if restaurante else '' }}">
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label">Imagen de portada (URL)</label>
-                            <input
-                             type="url"
-                             name="imagen_portada"
-                             class="form-control"
-                             value="{{ restaurante.cover_image_url if restaurante else '' }}">
-                        </div>
-
-                        <div class="d-grid">
-
-                            <button
-                                type="submit"
-                                class="btn btn-success btn-lg w-100">
-
-                                Guardar cambios
-
-                            </button>
-
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">Guardar cambios</button>
                         </div>
 
                     </form>
 
-                    <!-- Fase 12: Plan de suscripción (demo con Stripe, modo test) -->
-                    <div class="card border-0 shadow-sm rounded-4 mt-4">
-
-                        <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
-
-                            <div>
-
-                                <h5 class="fw-bold mb-1">
-                                    Plan actual:
-                                    {% if restaurante and restaurante.plan == "pro" %}
-                                        <span class="badge bg-success">Pro</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Gratis</span>
-                                    {% endif %}
-                                </h5>
-
-                                {% if restaurante and restaurante.plan == "pro" %}
-                                    <p class="text-muted mb-0">
-                                        Ya tenés acceso a platillos ilimitados, IA y todas las funciones Pro.
-                                    </p>
-                                {% else %}
-                                    <p class="text-muted mb-0">
-                                        Actualizá a Pro (GTQ 249.99/mes) para desbloquear platillos ilimitados y las funciones de IA.
-                                    </p>
-                                {% endif %}
-
-                            </div>
-
-                            {% if not restaurante or restaurante.plan != "pro" %}
-
-                                <!-- Este form manda al usuario a Stripe Checkout (pago simulado, modo test) -->
-                                <form action="{{ url_for('subscribe') }}" method="POST">
-                                    <button type="submit" class="btn btn-success btn-lg">
-                                        ⭐ Actualizar a Pro
-                                    </button>
-                                </form>
-
-                            {% endif %}
-
-                        </div>
-
-                    </div>
-
                 </div>
-
             </div>
 
         </div>

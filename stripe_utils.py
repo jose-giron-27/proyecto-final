@@ -86,7 +86,17 @@ def verificar_pago(session_id):
         sesion = stripe.checkout.Session.retrieve(session_id)
 
         pagado = sesion.payment_status == "paid"
-        restaurant_id = sesion.metadata.get("restaurant_id")
+
+        # En stripe-python v15+, el objeto metadata ya no soporta dict()
+        # ni siempre expone .get() directamente, pero sí acceso tipo
+        # metadata["clave"]. Usamos ese acceso de forma segura.
+        metadata = getattr(sesion, "metadata", None)
+        restaurant_id = None
+        if metadata is not None:
+            try:
+                restaurant_id = metadata["restaurant_id"]
+            except (KeyError, TypeError):
+                restaurant_id = None
 
         return {"ok": True, "pagado": pagado, "restaurant_id": restaurant_id}
 

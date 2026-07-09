@@ -1,6 +1,71 @@
 body{
-    background:#f8f9fa;
+    background:#F3EFE6;
     font-family:Arial, Helvetica, sans-serif;
+}
+
+/* Reemplazamos el gris clínico de Bootstrap por un crema cálido
+   consistente con la paleta del sitio, en navbar, tarjetas y
+   secciones "bg-light" de la landing page */
+.bg-crema, .bg-light{
+    background-color:#FAF5EA !important;
+}
+
+/* Verde sobrio en vez del verde brillante por defecto de Bootstrap */
+:root{
+    --bs-success: #5E7D5E;
+    --bs-success-rgb: 94, 125, 94;
+}
+
+.btn-success{
+    background-color:#5E7D5E;
+    border-color:#5E7D5E;
+}
+.btn-success:hover, .btn-success:focus, .btn-success:active{
+    background-color:#4E6B4E !important;
+    border-color:#4E6B4E !important;
+}
+.btn-outline-success{
+    color:#5E7D5E;
+    border-color:#5E7D5E;
+}
+.btn-outline-success:hover{
+    background-color:#5E7D5E;
+    border-color:#5E7D5E;
+    color:#fff;
+}
+.bg-success{
+    background-color:#5E7D5E !important;
+}
+.text-success{
+    color:#5E7D5E !important;
+}
+.border-success{
+    border-color:#5E7D5E !important;
+}
+.badge.bg-success{
+    background-color:#5E7D5E !important;
+}
+
+.btn-ocre{
+    background-color:#B8934A;
+    border-color:#B8934A;
+    color:#fff;
+}
+.btn-ocre:hover, .btn-ocre:focus{
+    background-color:#9E7B3A;
+    border-color:#9E7B3A;
+    color:#fff;
+}
+
+.btn-verde-oscuro{
+    background-color:#3F5940;
+    border-color:#3F5940;
+    color:#fff;
+}
+.btn-verde-oscuro:hover, .btn-verde-oscuro:focus{
+    background-color:#324832;
+    border-color:#324832;
+    color:#fff;
 }
 
 section{
@@ -8,7 +73,10 @@ section{
     padding-bottom:80px;
 }
 
+/* Las tarjetas usan el mismo crema cálido que el navbar, para que
+   todo el "blanco" del sitio sea el mismo tono coherente */
 .card{
+    background:#FAF5EA;
     border:none;
     border-radius:20px;
     transition:.3s;
@@ -17,6 +85,14 @@ section{
 .card:hover{
     transform:translateY(-8px);
     box-shadow:0 18px 40px rgba(0,0,0,.12);
+}
+
+/* Las tarjetas que contienen un formulario no deben "levantarse" al
+   pasar el mouse mientras el usuario está escribiendo/navegando */
+.card:has(form):hover,
+.card-static:hover{
+    transform:none;
+    box-shadow:0 4px 12px rgba(0,0,0,.06);
 }
 
 .btn{
@@ -52,6 +128,32 @@ footer{
     padding:10px 18px;
     border-radius:30px;
     font-size:.9rem;
+}
+
+.form-control{
+    background-color:#FFFDF8;
+    border-color:rgba(94,125,94,.25);
+}
+.form-control:focus{
+    background-color:#FFFDF8;
+    border-color:#5E7D5E;
+    box-shadow:0 0 0 .25rem rgba(94,125,94,.15);
+}
+
+/* Las tablas de Bootstrap traen su propio fondo por variable CSS,
+   independiente de la tarjeta que las contiene - lo igualamos */
+.table{
+    --bs-table-bg:transparent;
+    --bs-table-color:#2B2420;
+}
+.table-light{
+    --bs-table-bg:#EFE7D6;
+    --bs-table-color:#2B2420;
+    --bs-table-striped-bg:#EFE7D6;
+    --bs-table-hover-bg:#EFE7D6;
+}
+.table-hover>tbody>tr:hover>*{
+    --bs-table-accent-bg:#F0EADC;
 }
 
 html{

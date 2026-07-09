@@ -30,7 +30,7 @@ Editar platillo | AutoMenu AI
 
                     </p>
 
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data">
 
                         <div class="mb-3">
 
@@ -76,17 +76,12 @@ Editar platillo | AutoMenu AI
 
                                 </label>
 
-                                <select
+                                <input
+                                    type="text"
                                     name="categoria"
-                                    class="form-control">
-                                    <option value="entradas" {% if platillo.category == "entradas" %}selected{% endif %}>Entradas</option>
-                                    <option value="platos fuertes" {% if platillo.category == "platos fuertes" %}selected{% endif %}>Platos fuertes</option>
-                                    <option value="hamburguesas" {% if platillo.category == "hamburguesas" %}selected{% endif %}>Hamburguesas</option>
-                                    <option value="tacos" {% if platillo.category == "tacos" %}selected{% endif %}>Tacos</option>
-                                    <option value="bebidas" {% if platillo.category == "bebidas" %}selected{% endif %}>Bebidas</option>
-                                    <option value="postres" {% if platillo.category == "postres" %}selected{% endif %}>Postres</option>
-                                    <option value="combos" {% if platillo.category == "combos" %}selected{% endif %}>Combos</option>
-                                </select>
+                                    class="form-control"
+                                    value="{{ platillo.category }}"
+                                    placeholder="Ej. Postres, Vegetariano, Especialidades...">
 
                             </div>
 
@@ -157,15 +152,32 @@ Editar platillo | AutoMenu AI
 
                             <label class="form-label">
 
-                                Imagen (URL)
+                                Imagen del platillo
 
                             </label>
 
                             <input
                                 type="url"
                                 name="imagen_url"
-                                class="form-control"
-                                value="{{ platillo.image_url }}">
+                                class="form-control mb-2"
+                                value="{{ platillo.image_url }}"
+                                placeholder="Pegá una URL de imagen: https://...">
+
+                            {% if platillo.image_url %}
+                            <img src="{{ platillo.image_url }}" class="img-thumbnail mb-2" style="max-height: 120px;">
+                            {% endif %}
+
+                            <div class="text-center text-muted small mb-2">— o —</div>
+
+                            <input
+                                type="file"
+                                name="imagen_archivo"
+                                accept="image/*"
+                                class="form-control">
+
+                            <small class="text-muted">
+                                Si subís un archivo, se usa esa imagen en vez de la URL.
+                            </small>
 
                         </div>
 
