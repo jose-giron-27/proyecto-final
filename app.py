@@ -609,7 +609,10 @@ def ai_combo():
         "response": resultado_ia["combo"]
     })
 
-    # Paso 5: Redirigir de vuelta a la lista de platillos
+    # Paso 5: Mostrar el combo sugerido como mensaje flash (visible en pantalla)
+    flash(resultado_ia["combo"], "caption")
+
+    # Paso 6: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
 
@@ -665,7 +668,10 @@ def ai_tags(dish_id):
     # Paso 5: Actualizar las etiquetas del platillo en Supabase
     update_dish(dish_id, {"tags": resultado_ia["etiquetas"]})
 
-    # Paso 6: Redirigir de vuelta a la lista de platillos
+    # Paso 6: Mostrar confirmación de las etiquetas aplicadas
+    flash("Etiquetas aplicadas: " + ", ".join(resultado_ia["etiquetas"]), "success")
+
+    # Paso 7: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
 
@@ -717,7 +723,10 @@ def ai_name(dish_id):
         "response": ", ".join(resultado_ia["nombres"])
     })
 
-    # Paso 5: Redirigir de vuelta a la lista de platillos
+    # Paso 5: Mostrar los nombres sugeridos como mensaje flash (visible en pantalla)
+    flash("Nombres sugeridos: " + ", ".join(resultado_ia["nombres"]), "caption")
+
+    # Paso 6: Redirigir de vuelta a la lista de platillos
     return redirect(url_for("dish_list"))
 
 
